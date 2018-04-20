@@ -12,6 +12,7 @@ EditorV2-win32-x64
 # Win Test script
 build.bat
 run.bat
+clear.bat
 
 # Test project
 test
