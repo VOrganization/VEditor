@@ -1,0 +1,1187 @@
+
+<style>
+    .context_settings{
+        width: 100%;
+        height: 100%;
+        white-space: nowrap;
+        overflow: auto;
+    }
+
+    .context_settings > div{
+        margin-bottom: 30px;
+    }
+
+    .context_settings_header{
+        width: 100%;
+        background-color: var(--main-element-color0);
+        border-bottom: 1px solid var(--main-separator-solor);
+        color: var(--main-font-color0);
+    }
+
+    .context_settings_header_icon, .context_settings_header_data{
+        float: left;
+    }
+
+    .context_settings_header_data{
+        width: calc(100% - 50px);
+    }
+
+    .context_settings_header_icon > img{
+        width: 50px;
+        height: 50px;
+        border-radius: 50px;
+        filter: invert(50%);
+    }
+
+    .context_settings_header_properites{
+        width: 100%;
+        text-align: right;
+    }
+
+    .context_settings_header_name{
+        padding-left: 10px;
+    }
+
+    .context_settings_div{
+        width: 100%;
+        box-sizing: border-box;
+        background-color: var(--main-element-color0);
+        color: var(--main-font-color0);
+        padding: 6px;
+        box-shadow: 0 0 3px 1px var(--main-font-shadow);
+    }
+
+   .info{
+        float:left;   
+        margin-bottom: 5px;
+        width: 50%;
+    }
+
+    .pp{
+        float: right;
+        width: 35%;
+        max-width: 35%;
+        box-sizing: border-box;
+        margin-right: 9%;
+    }
+
+    [class^="transform_pos_"], [class^="transform_rot_"], [class^="transform_sca_"]{
+        margin-left: 5px;
+        width: calc(33.3333333333% - 6px);
+    }
+
+    .pcolor{
+        max-width: 100%;
+    }
+
+    .material_name{
+        float: none;
+        max-width: 90%;
+        width: 90%;
+        margin-left: 5%;
+    }
+
+    .material_viewer > canvas{
+        display: block;
+        width: 50%;
+        margin: 0 auto;
+        box-shadow: 0 0 10px 1px rgb(51, 51, 51);
+    }
+
+</style>
+
+
+
+<script type="text/javascript">
+    function context_settings(){ 
+        let context = $("div.context_settings").eq($("div.context_settings").length - 1);
+
+        let selected_object = null;
+        let selected_object_material = null;
+
+        let material_viewer = {scene: new THREE.Scene(), camera: new THREE.PerspectiveCamera( 75, 1, 0.1, 10000 ), render: new THREE.WebGLRenderer({antialias: true}), material: null, ambient: null};
+
+        let init_material_viewer = function(){
+            material_viewer.render.setSize( 200, 200 );
+            context.children(".material_settings").children(".material_viewer").append(material_viewer.render.domElement);
+            let material_viewer_render = function(){
+                requestAnimationFrame(material_viewer_render);
+                material_viewer.render.render(material_viewer.scene, material_viewer.camera);
+            };
+            material_viewer_render();
+            material_viewer.material = new THREE.MeshPhongMaterial({color: new THREE.Color(0xffffff)})
+            material_viewer.camera.position.z = 5.5;
+            material_viewer.scene.add(new THREE.Mesh(new THREE.SphereGeometry(2.5, 64, 64), material_viewer.material));
+            let material_viewer_light = new THREE.DirectionalLight(0xffffff, 0.5);
+            material_viewer_light.position.z = 4;
+            material_viewer.scene.add(material_viewer_light);
+
+
+            let path_cube_map = "res/textures/cube/Park3Med/";
+            var format = '.jpg';
+            var urls = [
+                path_cube_map + 'px' + format, path_cube_map + 'nx' + format,
+                path_cube_map + 'py' + format, path_cube_map + 'ny' + format,
+                path_cube_map + 'pz' + format, path_cube_map + 'nz' + format
+            ];
+            var reflectionCube = new THREE.CubeTextureLoader().load(urls);
+            reflectionCube.format = THREE.RGBFormat;
+            
+            var refractionCube = new THREE.CubeTextureLoader().load(urls);
+            refractionCube.mapping = THREE.CubeRefractionMapping;
+            refractionCube.format = THREE.RGBFormat;
+                    
+            material_viewer.scene.background = new THREE.Color(0x333333);
+
+            material_viewer.scene.add(new THREE.AmbientLight(0x444444));
+            material_viewer.ambient = material_viewer.scene.children[material_viewer.scene.children.length - 1];
+            material_viewer.material = material_viewer.scene.children[0].material;
+            material_viewer.material.transparent = true;
+            
+
+            material_viewer.scene.background = reflectionCube;
+            material_viewer.material.envMap = refractionCube;
+            material_viewer.material.reflectivity = 0.0;
+            material_viewer.material.refractionRatio = 0.0;
+            material_viewer.material.needsUpdate = true;
+        }
+        init_material_viewer();
+        
+
+        function Update(){
+            context.children(".context_settings_div").hide();
+            if(editor_data_select.type == "file"){
+                let type = get_file_type(editor_data_select.data);
+                context.children(".context_settings_header").children(".context_settings_header_icon").children("img").attr("src", "res/img/" + type + ".png");
+                context.children(".context_settings_header").children(".context_settings_header_data").children(".context_settings_header_name").html(String(editor_data_select.data));
+
+                switch (type) {
+                    case "model":{
+                        context.children(".model_settings").show();
+                        context.children(".model_settings").children(".model_optimize_mesh").val(0);
+                        context.children(".model_settings").children(".model_auto_uv").val(0);
+                        context.children(".model_settings").children(".model_auto_normal").val(0);
+                        context.children(".model_settings").children(".model_smooth_normal").val(0);
+                        context.children(".model_settings").children(".model_inport_material").val(0);
+                        break;
+                    }
+                
+                    default:
+                        break;
+                }
+            }
+            else if(editor_data_select.type == "object"){
+                let object = find_object(editor_data_select.data);
+                if(object === null){
+                    context.children(".context_settings_header").children(".context_settings_header_data").children(".context_settings_header_name").html("none");    
+                }
+                else{
+                    let type = object.type;
+                    selected_object = object;
+                    context.children(".context_settings_header").children(".context_settings_header_icon").children("img").attr("src", "res/img/" + type + ".png");
+                    context.children(".context_settings_header").children(".context_settings_header_data").children(".context_settings_header_name").html(object.name);
+
+                    context.children(".transform_settings").show();
+                    context.children(".transform_settings").children(".transform_pos_x").val(Number(object.position.x).toFixed(3));
+                    context.children(".transform_settings").children(".transform_pos_y").val(Number(object.position.y).toFixed(3));
+                    context.children(".transform_settings").children(".transform_pos_z").val(Number(object.position.z).toFixed(3));
+                    context.children(".transform_settings").children(".transform_rot_x").val(((object.rotation.x * 180) / 3.14).toFixed(3));
+                    context.children(".transform_settings").children(".transform_rot_y").val(((object.rotation.y * 180) / 3.14).toFixed(3));
+                    context.children(".transform_settings").children(".transform_rot_z").val(((object.rotation.z * 180) / 3.14).toFixed(3));
+                    context.children(".transform_settings").children(".transform_sca_x").val(object.scale.x.toFixed(3));
+                    context.children(".transform_settings").children(".transform_sca_y").val(object.scale.y.toFixed(3));
+                    context.children(".transform_settings").children(".transform_sca_z").val(object.scale.z.toFixed(3));
+
+                    context.children(".display_settings").show();
+                    switch (object.display_type) {
+                        case 0:{
+                            context.children(".display_settings").children(".display_type").val("Normal");
+                            break;
+                        }
+                        case 1:{
+                            context.children(".display_settings").children(".display_type").val("Background");
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                    context.children(".display_settings").children(".display_priority").val(object.display_priority);
+                    
+                    
+                    
+                    if(String(object.type).indexOf("Light") > -1){
+                        context.children(".light_settings").show();
+                        context.children(".light_settings").children(".light_diffuse").spectrum("set", object.color.getHexString());
+                        context.children(".light_settings").children(".light_specular").spectrum("set", object.specular.getHexString());
+                        context.children(".light_settings").children(".light_ambient").spectrum("set", object.ambient.getHexString());
+                        context.children(".light_settings").children(".light_int").val(object.intensity);
+                        context.children(".light_settings").children(".light_shadow").prop("checked", object.castShadow);
+                        context.children(".light_settings").children(".light_shadow_quality").val(object.shadow.quality);
+                        context.children(".light_settings").children(".light_shadow_near").val(object.shadow.camera.near);
+                        context.children(".light_settings").children(".light_shadow_far").val(object.shadow.camera.far);
+                        if(object.type == "DirectionalLight"){
+                            context.children(".light_settings").children(".point_light").hide();
+                            context.children(".light_settings").children(".spot_light").hide();
+                        }
+                        if(object.type == "SpotLight"){
+                            context.children(".light_settings").children(".point_light").show();
+                            context.children(".light_settings").children(".spot_light").show();
+                            context.children(".light_settings").children(".point_light").children(".light_dis").val(selected_object.distance);
+                            context.children(".light_settings").children(".spot_light").children(".light_angle").val(selected_object.angle);
+                            context.children(".light_settings").children(".spot_light").children(".light_pen").val(selected_object.penumbra);
+                        }
+                        if(object.type == "PointLight"){
+                            context.children(".light_settings").children(".point_light").show();
+                            context.children(".light_settings").children(".spot_light").hide();
+                            context.children(".light_settings").children(".point_light").children(".light_dis").val(selected_object.distance);
+                        }
+                    }
+                    else if(String(object.type).indexOf("Camera") > -1){
+                        context.children(".camera_settings").show();
+                        context.children(".camera_settings").children(".camera_fov").val(object.fov);
+                        context.children(".camera_settings").children(".camera_near").val(object.near);
+                        context.children(".camera_settings").children(".camera_far").val(object.far);
+                        context.children(".camera_settings").children(".camera_zoom").val(object.zoom);
+                    }
+                    else{
+                        if(object.type == "Mesh"){
+                            context.children(".material_settings").show();
+                            material_viewer.scene.children[0].material = object.material;
+                            material_viewer.scene.children[0].material.needsUpdate = true;
+
+                            context.children(".material_settings").children(".material_color_diffuse").spectrum("set", object.material.color.getHexString());
+                            context.children(".material_settings").children(".material_color_emission").spectrum("set", object.material.emissive.getHexString());
+                            context.children(".material_settings").children(".material_int_emission").val(object.material.emissiveIntensity);
+                            context.children(".material_settings").children(".material_refraction").val(object.material.refractionRatio);
+                            context.children(".material_settings").children(".material_bump_scale").val(object.material.bumpScale);
+                            context.children(".material_settings").children(".material_displacement_bias").val(object.material.displacementBias);
+                            context.children(".material_settings").children(".material_displacement_scale").val(object.material.displacementScale);
+                            context.children(".material_settings").children(".material_ao_int").val(object.material.aoMapIntensity);
+
+                            if(object.material.type == "MeshStandardMaterial"){
+                                context.children(".material_settings").children(".phong").hide();
+                                context.children(".material_settings").children(".pbr").show();
+                                context.children(".material_settings").children(".material_type").val("PBR");
+                                context.children(".material_settings").children(".material_roughness").val(object.material.roughness);
+                                context.children(".material_settings").children(".material_metalness").val(object.material.metalness);
+                            }
+                            else{
+                                context.children(".material_settings").children(".phong").show();
+                                context.children(".material_settings").children(".pbr").hide();
+                                context.children(".material_settings").children(".material_reflection").val(object.material.reflectivity);
+                                context.children(".material_settings").children(".material_color_specular").spectrum("set", object.material.specular.getHexString());
+                                context.children(".material_settings").children(".material_shi_specular").val(object.material.shininess);
+                                context.children(".material_settings").children(".material_type").val("Phong");
+                            }
+                            
+                            if(object.material.dynamic_cube == 1){
+                                context.children(".material_settings").children(".material_dynamic_cube").val("Single");
+                            }
+                            else{
+                                context.children(".material_settings").children(".material_dynamic_cube").val("Scene");
+                            }
+                            
+                            context.children(".material_settings").children(".material_generate_in").prop("checked", selected_object.material.generate_in_shader);
+
+                            context.children(".material_settings").children(".material_shader").html(`<option value="">None</option>`);
+                            for (let i = 0; i < editor_data.data.shaders.length; i++) {
+                                let f = editor_data.data.shaders[i].path;
+                                context.children(".material_settings").children(".material_shader").append(`<option value="` + f + `">` + f + `</option>`);
+                            }
+
+                            context.children(".material_settings").children(".material_map_diffuse").html(`<option value="">None</option>`);
+                            context.children(".material_settings").children(".material_map_specular").html(`<option value="">None</option>`);
+                            context.children(".material_settings").children(".material_map_emission").html(`<option value="">None</option>`);
+                            context.children(".material_settings").children(".material_normal_map").html(`<option value="">None</option>`);
+                            context.children(".material_settings").children(".material_bump_map").html(`<option value="">None</option>`);
+                            context.children(".material_settings").children(".material_map_metalness").html(`<option value="">None</option>`);
+                            context.children(".material_settings").children(".material_map_roughness").html(`<option value="">None</option>`);
+                            context.children(".material_settings").children(".material_displacement_map").html(`<option value="">None</option>`);
+                            context.children(".material_settings").children(".material_ao_map").html(`<option value="">None</option>`);
+                            for (let i = 0; i < editor_data.data.textures.length; i++) {
+                                let f = editor_data.data.textures[i].path;
+                                context.children(".material_settings").children(".material_map_diffuse").append(`<option value="` + f + `">` + f + `</option>`);
+                                context.children(".material_settings").children(".material_map_specular").append(`<option value="` + f + `">` + f + `</option>`);
+                                context.children(".material_settings").children(".material_map_emission").append(`<option value="` + f + `">` + f + `</option>`);
+                                context.children(".material_settings").children(".material_normal_map").append(`<option value="` + f + `">` + f + `</option>`);
+                                context.children(".material_settings").children(".material_bump_map").append(`<option value="` + f + `">` + f + `</option>`);
+                                context.children(".material_settings").children(".material_map_metalness").append(`<option value="` + f + `">` + f + `</option>`);
+                                context.children(".material_settings").children(".material_map_roughness").append(`<option value="` + f + `">` + f + `</option>`);
+                                context.children(".material_settings").children(".material_displacement_map").append(`<option value="` + f + `">` + f + `</option>`);
+                                context.children(".material_settings").children(".material_ao_map").append(`<option value="` + f + `">` + f + `</option>`);
+                            }
+                            context.children(".material_settings").children(".material_map_diffuse").val(get_path_of_tex(object.material.map));
+                            context.children(".material_settings").children(".material_map_emission").val(get_path_of_tex(object.material.emissiveMap));
+                            context.children(".material_settings").children(".material_normal_map").val(get_path_of_tex(object.material.normalMap));
+                            context.children(".material_settings").children(".material_bump_map").val(get_path_of_tex(object.material.bumpMap));
+                            context.children(".material_settings").children(".material_displacement_map").val(get_path_of_tex(object.material.displacementMap));
+                            context.children(".material_settings").children(".material_ao_map").val(get_path_of_tex(object.material.aoMap));
+                            
+                            if(object.material.type == "MeshStandardMaterial"){
+                                context.children(".material_settings").children(".material_map_metalness").val(get_path_of_tex(object.material.metalnessMap));
+                                context.children(".material_settings").children(".material_map_roughness").val(get_path_of_tex(object.material.roughnessMap));
+                            }
+                            else{
+                                context.children(".material_settings").children(".material_map_specular").val(get_path_of_tex(object.material.specularMap));
+                            }
+
+                            // if(object.material.engine_shader !== null){
+                            //     context.children(".material_settings").children(".no-shader").hide();
+                            //     context.children(".material_settings").children(".shader").show();
+                            //     context.children(".material_settings").children(".material_shader").val(object.material.engine_shader.path);
+                            // }
+
+                        }
+                    }
+
+
+                }
+            }
+            else{
+                selected_object = null;
+                context.children(".context_settings_header").children(".context_settings_header_icon").children("img").attr("src", "");
+                context.children(".context_settings_header").children(".context_settings_header_data").children(".context_settings_header_name").html("Not selected object");
+            }
+        }
+
+        let init_transform = function(){
+            context.children(".transform_settings").children(".transform_pos_x").change(function(){
+                if(selected_object !== null){
+                    selected_object.position.x = $(this).val();
+                    editor_update_data();
+                }
+            });
+            context.children(".transform_settings").children(".transform_pos_y").change(function(){
+                if(selected_object !== null){
+                    selected_object.position.y = $(this).val();
+                    editor_update_data();
+                }
+            });
+            context.children(".transform_settings").children(".transform_pos_z").change(function(){
+                if(selected_object !== null){
+                    selected_object.position.z = $(this).val();
+                    editor_update_data();
+                }
+            });
+
+
+            context.children(".transform_settings").children(".transform_rot_x").change(function(){
+                if(selected_object !== null){
+                    selected_object.rotation.x = (($(this).val() * 3.14) / 180).toFixed(6);
+                    editor_update_data();
+                }
+            });
+            context.children(".transform_settings").children(".transform_rot_y").change(function(){
+                if(selected_object !== null){
+                    selected_object.rotation.y = (($(this).val() * 3.14) / 180).toFixed(6);
+                    editor_update_data();
+                }
+            });
+            context.children(".transform_settings").children(".transform_rot_z").change(function(){
+                if(selected_object !== null){
+                    selected_object.rotation.z = (($(this).val() * 3.14) / 180).toFixed(6);
+                    editor_update_data();
+                }
+            });
+
+
+            context.children(".transform_settings").children(".transform_sca_x").change(function(){
+                if(selected_object !== null){
+                    selected_object.scale.x = $(this).val();
+                    editor_update_data();
+                }
+            });
+            context.children(".transform_settings").children(".transform_sca_y").change(function(){
+                if(selected_object !== null){
+                    selected_object.scale.y = $(this).val();
+                    editor_update_data();
+                }
+            });
+            context.children(".transform_settings").children(".transform_sca_z").change(function(){
+                if(selected_object !== null){
+                    selected_object.scale.z = $(this).val();
+                    editor_update_data();
+                }
+            });
+        }
+        init_transform();
+
+
+        let init_display = function(){
+
+            context.children(".display_settings").children(".display_type").change(function(){
+                switch ($(this).val()) {
+                    case "Normal":{
+                        selected_object.display_type = 0;
+                        break;
+                    }
+                    case "Background":{
+                        selected_object.display_type = 1;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            });
+
+            context.children(".display_settings").children(".display_priority").change(function(){
+                selected_object.display_priority = Number($(this).val());
+            });
+
+        }
+        init_display();
+
+
+        let init_material = function(){
+
+            context.children(".material_settings").children(".material_type").change(function(){
+                let val = String($(this).val()).toLocaleLowerCase();
+                let mat = selected_object.material;
+                switch(val){
+                    case "phong":{
+                        let t = 0;
+                        if(t != mat.type_engine){
+                            selected_object.material = new THREE.MeshPhongMaterial({
+                                transparent: true,
+                                opacity: mat.opacity,
+                                color: mat.color,
+                                map: mat.map,
+                                bumpMap: mat.bumpMap,
+                                bumpScale: mat.bumpScale,
+                                normalMap: mat.normalMap,
+                                aoMap: mat.aoMap,
+                                aoMapIntensity: mat.aoMapIntensity,
+                                displacementBias: mat.displacementBias,
+                                displacementMap: mat.displacementMap,
+                                displacementScale: mat.displacementScale,
+                                emissive: mat.emissive,
+                                emissiveIntensity: mat.emissiveIntensity,
+                                emissiveMap: mat.emissiveMap,
+                                name: mat.name,
+                                refractionRatio: mat.refractionRatio
+                            });
+                            material_viewer.scene.children[0].material = selected_object.material;
+                            context.children(".material_settings").children(".phong").show();
+                            context.children(".material_settings").children(".pbr").hide();
+                        }
+                        break;
+                    }
+                    case "pbr":{
+                        let t = 1;
+
+                        if(t != mat.type_engine){
+                            selected_object.material = new THREE.MeshStandardMaterial({
+                                transparent: true,
+                                opacity: mat.opacity,
+                                color: mat.color,
+                                map: mat.map,
+                                bumpMap: mat.bumpMap,
+                                bumpScale: mat.bumpScale,
+                                normalMap: mat.normalMap,
+                                aoMap: mat.aoMap,
+                                aoMapIntensity: mat.aoMapIntensity,
+                                displacementBias: mat.displacementBias,
+                                displacementMap: mat.displacementMap,
+                                displacementScale: mat.displacementScale,
+                                emissive: mat.emissive,
+                                emissiveIntensity: mat.emissiveIntensity,
+                                emissiveMap: mat.emissiveMap,
+                                name: mat.name,
+                                refractionRatio: mat.refractionRatio
+                            });
+                            context.children(".material_settings").children(".phong").hide();
+                            context.children(".material_settings").children(".pbr").show();
+                        }
+                        break;
+                    }
+                }
+                material_viewer.scene.children[0].material = selected_object.material;
+            });
+
+            context.children(".material_settings").children(".material_opacity").change(function(){
+                material_viewer.material.opacity = Number($(this).val());
+                selected_object.material.opacity = material_viewer.material.opacity;
+            });
+
+            context.children(".material_settings").children(".material_generate_in").change(function(){
+                selected_object.material.generate_in_shader = $(this).prop("checked");
+            });
+
+            context.children(".material_settings").children(".material_color_diffuse").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 pp no-shader",
+                move: function(color) {
+                    material_viewer.material.color = new THREE.Color(color.toHexString());
+                    selected_object.material.color = material_viewer.material.color;
+                }
+            });
+
+            context.children(".material_settings").children(".material_map_diffuse").change(function(){
+                let p = $(this).val();
+                if(p == ""){
+                    material_viewer.material.map = null;
+                    material_viewer.material.needsUpdate = true;
+                    selected_object.material.map = null;
+                    selected_object.material.needsUpdate = true;
+                }
+                else{
+                    for (let i = 0; i < editor_data.data.textures.length; i++) {
+                        if(editor_data.data.textures[i].path == p){
+                            let tex = editor_data.data.textures[i].tex;
+                            material_viewer.material.map = tex;
+                            material_viewer.material.map.needsUpdate = true;
+                            material_viewer.material.needsUpdate = true;
+                            selected_object.material.map = tex;
+                            selected_object.material.map.needsUpdate = true;
+                            selected_object.material.needsUpdate = true;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            context.children(".material_settings").children(".material_map_roughness").change(function(){
+                let p = $(this).val();
+                if(p == ""){
+                    material_viewer.material.roughnessMap = null;
+                    material_viewer.material.needsUpdate = true;
+                    selected_object.material.roughnessMap = null;
+                    selected_object.material.needsUpdate = true;
+                }
+                else{
+                    for (let i = 0; i < editor_data.data.textures.length; i++) {
+                        if(editor_data.data.textures[i].path == p){
+                            let tex = editor_data.data.textures[i].tex;
+                            material_viewer.material.roughnessMap = tex;
+                            material_viewer.material.roughnessMap.needsUpdate = true;
+                            material_viewer.material.needsUpdate = true;
+                            selected_object.material.roughnessMap = tex;
+                            selected_object.material.roughnessMap.needsUpdate = true;
+                            selected_object.material.needsUpdate = true;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            context.children(".material_settings").children(".material_roughness").change(function(){
+                material_viewer.material.roughness = Number($(this).val());
+                selected_object.material.roughness = material_viewer.material.roughness;
+            });
+
+            context.children(".material_settings").children(".material_map_metalness").change(function(){
+                let p = $(this).val();
+                if(p == ""){
+                    material_viewer.material.metalnessMap = null;
+                    material_viewer.material.needsUpdate = true;
+                    selected_object.material.metalnessMap = null;
+                    selected_object.material.needsUpdate = true;
+                }
+                else{
+                    for (let i = 0; i < editor_data.data.textures.length; i++) {
+                        if(editor_data.data.textures[i].path == p){
+                            let tex = editor_data.data.textures[i].tex;
+                            material_viewer.material.metalnessMap = tex;
+                            material_viewer.material.metalnessMap.needsUpdate = true;
+                            material_viewer.material.needsUpdate = true;
+                            selected_object.material.metalnessMap = tex;
+                            selected_object.material.metalnessMap.needsUpdate = true;
+                            selected_object.material.needsUpdate = true;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            context.children(".material_settings").children(".material_metalness").change(function(){
+                material_viewer.material.metalness = Number($(this).val());
+                selected_object.material.metalness = material_viewer.material.metalness;
+            });
+
+            context.children(".material_settings").children(".material_color_specular").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 phong pp no-shader",
+                move: function(color) {
+                    material_viewer.material.specular = new THREE.Color(color.toHexString());
+                    selected_object.material.specular = material_viewer.material.specular;
+                }
+            });
+
+            context.children(".material_settings").children(".material_map_specular").change(function(){
+                let p = $(this).val();
+                if(p == ""){
+                    material_viewer.material.specularMap = null;
+                    material_viewer.material.needsUpdate = true;
+                    selected_object.material.specularMap = null;
+                    selected_object.material.needsUpdate = true;
+                }
+                else{
+                    for (let i = 0; i < editor_data.data.textures.length; i++) {
+                        if(editor_data.data.textures[i].path == p){
+                            let tex = editor_data.data.textures[i].tex;
+                            material_viewer.material.specularMap = tex;
+                            material_viewer.material.specularMap.needsUpdate = true;
+                            material_viewer.material.needsUpdate = true;
+                            selected_object.material.specularMap = tex;
+                            selected_object.material.specularMap.needsUpdate = true;
+                            selected_object.material.needsUpdate = true;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            context.children(".material_settings").children(".material_shi_specular").change(function(){
+                material_viewer.material.shininess = Number($(this).val());
+                selected_object.material.shininess = material_viewer.material.shininess;
+            });
+
+            context.children(".material_settings").children(".material_color_emission").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 pp no-shader",
+                move: function(color) {
+                    material_viewer.material.emissive = new THREE.Color(color.toHexString());
+                    selected_object.material.emissive = material_viewer.material.emissive;
+                }
+            });
+
+            context.children(".material_settings").children(".material_map_emission").change(function(){
+                let p = $(this).val();
+                if(p == ""){
+                    material_viewer.material.emissiveMap = null;
+                    material_viewer.material.needsUpdate = true;
+                    selected_object.material.emissiveMap = null;
+                    selected_object.material.needsUpdate = true;
+                }
+                else{
+                    for (let i = 0; i < editor_data.data.textures.length; i++) {
+                        if(editor_data.data.textures[i].path == p){
+                            let tex = editor_data.data.textures[i].tex;
+                            material_viewer.material.emissiveMap = tex;
+                            material_viewer.material.emissiveMap.needsUpdate = true;
+                            material_viewer.material.needsUpdate = true;
+                            selected_object.material.emissiveMap = tex;
+                            selected_object.material.emissiveMap.needsUpdate = true;
+                            selected_object.material.needsUpdate = true;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            context.children(".material_settings").children(".material_int_emission").change(function(){
+                material_viewer.material.emissiveIntensity = Number($(this).val());
+                selected_object.material.emissiveIntensity = material_viewer.material.emissiveIntensity;
+            });
+
+            context.children(".material_settings").children(".material_reflection").change(function(){
+                material_viewer.material.reflectivity = Number($(this).val());
+                selected_object.material.reflectivity = material_viewer.material.reflectivity;
+                            
+            });
+
+            context.children(".material_settings").children(".material_refraction").change(function(){
+                material_viewer.material.refractionRatio = Number($(this).val());
+                selected_object.material.refractionRatio = material_viewer.material.refractionRatio;
+            });
+
+            context.children(".material_settings").children(".material_dynamic_cube").change(function(){
+                let v = $(this).val();
+                if(v == "Scene"){
+                    selected_object.material.dynamic_cube = 0;
+                }
+                if(v == "Single"){
+                    selected_object.material.dynamic_cube = 1;
+                }
+            });
+
+            context.children(".material_settings").children(".material_normal_map").change(function(){
+                let p = $(this).val();
+                if(p == ""){
+                    material_viewer.material.normalMap = null;
+                    material_viewer.material.needsUpdate = true;
+                    selected_object.material.normalMap = null;
+                    selected_object.material.needsUpdate = true;
+                }
+                else{
+                    for (let i = 0; i < editor_data.data.textures.length; i++) {
+                        if(editor_data.data.textures[i].path == p){
+                            let tex = editor_data.data.textures[i].tex;
+                            material_viewer.material.normalMap = tex;
+                            material_viewer.material.normalMap.needsUpdate = true;
+                            material_viewer.material.needsUpdate = true;
+                            selected_object.material.normalMap = tex;
+                            selected_object.material.normalMap.needsUpdate = true;
+                            selected_object.material.needsUpdate = true;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            context.children(".material_settings").children(".material_bump_map").change(function(){
+                let p = $(this).val();
+                if(p == ""){
+                    material_viewer.material.bumpMap = null;
+                    material_viewer.material.needsUpdate = true;
+                    selected_object.material.bumpMap = null;
+                    selected_object.material.needsUpdate = true;
+                }
+                else{
+                    for (let i = 0; i < editor_data.data.textures.length; i++) {
+                        if(editor_data.data.textures[i].path == p){
+                            let tex = editor_data.data.textures[i].tex;
+                            material_viewer.material.bumpMap = tex;
+                            material_viewer.material.bumpMap.needsUpdate = true;
+                            material_viewer.material.needsUpdate = true;
+                            selected_object.material.bumpMap = tex;
+                            selected_object.material.bumpMap.needsUpdate = true;
+                            selected_object.material.needsUpdate = true;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            context.children(".material_settings").children(".material_bump_scale").change(function(){
+                let p = Number($(this).val());
+                material_viewer.material.bumpScale = p;
+                selected_object.material.bumpScale = p;
+            });
+
+            context.children(".material_settings").children(".material_displacement_map").change(function(){
+                let p = $(this).val();
+                if(p == ""){
+                    material_viewer.material.displacementMap = null;
+                    material_viewer.material.needsUpdate = true;
+                    selected_object.material.displacementMap = null;
+                    selected_object.material.needsUpdate = true;
+                }
+                else{
+                    for (let i = 0; i < editor_data.data.textures.length; i++) {
+                        if(editor_data.data.textures[i].path == p){
+                            let tex = editor_data.data.textures[i].tex;
+                            material_viewer.material.displacementMap = tex;
+                            material_viewer.material.displacementMap.needsUpdate = true;
+                            material_viewer.material.needsUpdate = true;
+                            selected_object.material.displacementMap = tex;
+                            selected_object.material.displacementMap.needsUpdate = true;
+                            selected_object.material.needsUpdate = true;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            context.children(".material_settings").children(".material_displacement_bias").change(function(){
+                let p = Number($(this).val());
+                material_viewer.material.displacementBias = p;
+                selected_object.material.displacementBias = p;
+            });
+
+            context.children(".material_settings").children(".material_displacement_scale").change(function(){
+                let p = Number($(this).val());
+                material_viewer.material.displacementScale = p;
+                selected_object.material.displacementScale = p;
+            });
+
+            context.children(".material_settings").children(".material_ao_map").change(function(){
+                let p = $(this).val();
+                if(p == ""){
+                    material_viewer.material.aoMap = null;
+                    material_viewer.material.needsUpdate = true;
+                    selected_object.material.aoMap = null;
+                    selected_object.material.needsUpdate = true;
+                    selected_object.material.aoMapIntensity = 0;
+                    context.children(".material_settings").children(".material_ao_int").val(0);
+                }
+                else{
+                    for (let i = 0; i < editor_data.data.textures.length; i++) {
+                        if(editor_data.data.textures[i].path == p){
+                            let tex = editor_data.data.textures[i].tex;
+                            material_viewer.material.aoMap = tex;
+                            material_viewer.material.aoMap.needsUpdate = true;
+                            material_viewer.material.needsUpdate = true;
+                            selected_object.material.aoMap = tex;
+                            selected_object.material.aoMap.needsUpdate = true;
+                            selected_object.material.needsUpdate = true;
+                            context.children(".material_settings").children(".material_ao_int").val(selected_object.material.aoMapIntensity);
+                            break;
+                        }
+                    }
+                }
+            });
+
+            context.children(".material_settings").children(".material_ao_int").change(function(){
+                let p = Number($(this).val());
+                material_viewer.material.aoMapIntensity = p;
+                selected_object.material.aoMapIntensity = p;
+            });
+
+            context.children(".material_settings").children(".material_shader").change(function(){
+                let v = $(this).val();
+                if(v == ""){
+                    context.children(".material_settings").children(".no-shader").show();
+                    context.children(".material_settings").children(".shader").hide();
+                    if(selected_object.material.type == "MeshStandardMaterial"){
+                        context.children(".material_settings").children(".phong").hide();
+                        context.children(".material_settings").children(".pbr").show();
+                    }
+                    else{
+                        context.children(".material_settings").children(".phong").show();
+                        context.children(".material_settings").children(".pbr").hide();
+                    }
+                }
+                else{
+                    context.children(".material_settings").children(".no-shader").hide();
+                    context.children(".material_settings").children(".shader").show();
+                    for (let i = 0; i < editor_data.data.shaders.length; i++) {
+                        if(editor_data.data.shaders[i].path == v){
+                            selected_object.material.engine_shader = editor_data.data.shaders[i];
+                            break;
+                        }
+                    }
+                }
+            });
+
+        }
+        init_material();
+       
+
+        let init_light = function(){
+
+            context.children(".light_settings").children(".light_diffuse").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 pp",
+                move: function(color) {
+                    selected_object.color = new THREE.Color(color.toHexString());
+                }
+            });
+
+            context.children(".light_settings").children(".light_specular").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 pp",
+                move: function(color) {
+                    selected_object.specular = new THREE.Color(color.toHexString());
+                }
+            });
+
+            context.children(".light_settings").children(".light_ambient").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 pp",
+                move: function(color) {
+                    selected_object.ambient = new THREE.Color(color.toHexString());
+                }
+            });
+
+            context.children(".light_settings").children(".light_int").change(function(){
+                selected_object.intensity = Number($(this).val());
+            });
+
+            context.children(".light_settings").children(".point_light").children(".light_dis").change(function(){
+                selected_object.distance = Number($(this).val());
+            });
+
+            context.children(".light_settings").children(".spot_light").children(".light_angle").change(function(){
+                selected_object.angle = Number($(this).val());
+            });
+
+            context.children(".light_settings").children(".spot_light").children(".light_pen").change(function(){
+                selected_object.penumbra = Number($(this).val());
+            });
+
+            context.children(".light_settings").children(".light_shadow").change(function(){
+                selected_object.castShadow = $(this).prop("checked");
+            });
+
+            context.children(".light_settings").children(".light_shadow_quality").change(function(){
+                selected_object.shadow.quality = Number($(this).val());
+            });
+
+            context.children(".light_settings").children(".light_shadow_near").change(function(){
+                selected_object.shadow.camera.near = Number($(this).val());
+            });
+
+            context.children(".light_settings").children(".light_shadow_far").change(function(){
+                selected_object.shadow.camera.far = Number($(this).val());
+            });
+
+        }
+        init_light();
+
+
+        let init_camera = function(){
+            context.children(".camera_settings").children(".camera_fov").change(function(){
+                selected_object.fov = Number($(this).val());
+                editor_update_data();
+            });
+
+            context.children(".camera_settings").children(".camera_near").change(function(){
+                selected_object.near = Number($(this).val());
+                editor_update_data();
+            });
+
+            context.children(".camera_settings").children(".camera_far").change(function(){
+                selected_object.far = Number($(this).val());
+                editor_update_data();
+            });
+
+            context.children(".camera_settings").children(".camera_zoom").change(function(){
+                selected_object.zoom = Number($(this).val());
+                editor_update_data();
+            });
+
+        }
+        init_camera();
+
+
+
+        context.children(".model_settings").children(".model_add_to_scene").click(function(){
+            if(editor_data_select.type == "file" && get_file_type(editor_data_select.data) == "model"){
+                let found = false;
+                for (let i = 0; i < editor_data.data.models.length; i++) {
+                    if(editor_data.data.models[i].path == editor_data_select.data){
+                        editor_data.data.object.push(editor_data.data.models[i].object.clone());
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found){
+                    load_model(editor_data.dir + "/" + editor_data_select.data, function(obj){
+                        obj.name = editor_data_select.data;
+                        editor_data.data.models.push({path: editor_data_select.data, object: obj});
+                        editor_data.data.object.push(obj.clone());
+                    });
+                }
+            }
+        });
+
+
+
+        editor_select_call_back.push(Update);
+        Update();
+    }
+    context_settings();
+</script>
+
+
+
+<div class="context_settings">
+    <div class="context_settings_header">
+        <div class="context_settings_header_icon">
+            <img src="">
+        </div>
+        <div class="context_settings_header_data">
+            <div class="context_settings_header_properites"><span class="icon-cog"></span></div>
+            <div class="context_settings_header_name">Not selected object</div>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+
+
+    <div class="context_settings_div transform_settings">
+        Transform<br>
+        position:<br>
+        <input type="number" class="transform_pos_x" value="0" step="0.1"><input type="number" class="transform_pos_y" value="0" step="0.1"><input type="number" class="transform_pos_z" value="0" step="0.1"><br>
+        rotation:<br>
+        <input type="number" class="transform_rot_x" value="0" step="1"><input type="number" class="transform_rot_y" value="0" step="1"><input type="number" class="transform_rot_z" value="0" step="1"><br>
+        scale:<br>
+        <input type="number" class="transform_sca_x" value="0" step="0.1"><input type="number" class="transform_sca_y" value="0" step="0.1"><input type="number" class="transform_sca_z" value="0" step="0.1"><br>
+    </div>
+
+    <div class="context_settings_div display_settings">
+        Display:<br>
+        <br>
+        <span class="info">Type:     </span> <select class="display_type pp"><option>Normal</option><option>Background</option></select>
+        <div class="bl"></div>
+        <span class="info">Priority: </span> <input class="display_priority pp" type="number" value="10" step="1" min="0" max="10">
+        <div class="bl"></div>
+    </div>
+
+    <div class="context_settings_div material_settings">
+        <span class="o">Material:<br><br></span>
+        <select class="material_name o"></select><br class="o">
+        <br>
+        <div class="material_viewer no-shader"></div>
+        <br class="no-shader">
+        <span class="info no-shader">Type:              </span> <select class="material_type pp no-shader"><option>Phong</option><option>PBR</option></select>
+        <div class="bl no-shader"></div>
+        <span class="info no-shader">Opacity:           </span> <input class="material_opacity pp no-shader" type="number" value="1" step="0.1" min="0" max="1">
+        <div class="bl no-shader"></div>
+        <span class="info">Shader:            </span> <select class="material_shader pp"><option>Ddefault</option></select>
+        <div class="bl"></div>
+        <!-- <span class="info">Auto Generate:     </span> <select class="material_auto_generate pp"><option>None</option><option>All</option><option>Only Light</option><option>None</option></select>
+        <div class="bl"></div>
+        <span class="info">Generate in shader:</span> <input class="material_generate_in pp" type="checkbox">
+        <div class="bl"></div> -->
+        <br class="no-shader">
+
+        <br class="no-shader">
+
+        <span class="no-shader">Diffuse:<br></span>
+        <span class="info no-shader">Color:  </span> <input type="text" class="material_color_diffuse pp" />
+        <div class="bl no-shader"></div>
+        <span class="info no-shader">Texture:</span> <select class="material_map_diffuse pp no-shader"><option>None</option></select>
+        <div class="bl no-shader"></div>
+        
+        <br class="no-shader">
+
+        <span class="pbr no-shader">Roughness:<br></span>
+        <span class="info pbr no-shader">Texture:   </span><select class="material_map_roughness pbr pp no-shader"><option>None</option></select>
+        <div class="bl pbr no-shader"></div>
+        <span class="info pbr no-shader">Intensity:   </span><input class="material_roughness pbr pp no-shader" type="number" value="0" step="0.001" min="0" max="1">
+        <div class="bl pbr no-shader"></div>
+
+        <br class="pbr no-shader">
+
+        <span class="pbr no-shader">Metalness:<br></span>
+        <span class="info pbr no-shader">Texture:   </span><select class="material_map_metalness pbr pp no-shader"><option>None</option></select>
+        <div class="bl pbr no-shader"></div>
+        <span class="info pbr no-shader">Intensity:   </span><input class="material_metalness pbr pp no-shader" type="number" value="0" step="0.001" min="0" max="1">
+        <div class="bl pbr no-shader"></div>
+
+        <br class="pbr no-shader">
+        
+        <span class="phong no-shader">Specular:<br></span>
+        <span class="info phong no-shader">Color:     </span><input type="text" class="material_color_specular pp" />
+        <div class="bl phong no-shader"></div>
+        <span class="info phong no-shader">Texture:   </span><select class="material_map_specular phong pp no-shader"><option>None</option></select>
+        <div class="bl phong no-shader"></div>
+        <span class="info phong no-shader">Shininess: </span><input class="material_shi_specular phong pp no-shader" type="number" value="30" step="0.1" min="0" max="100">
+        <div class="bl phong no-shader"></div>
+
+        <br class="phong no-shader">
+
+        <span class="info phong no-shader">Reflection:  </span> <input class="material_reflection phong pp no-shader" type="number" value="0" step="0.001" min="0" max="1">
+        <div class="bl phong no-shader"></div>
+        <span class="info no-shader">Refraction:  </span> <input class="material_refraction pp no-shader" type="number" value="0" step="0.001" min="0" max="1">
+        <div class="bl no-shader"></div>
+        <span class="info no-shader">Dynamic Cube:</span> <select class="material_dynamic_cube pp no-shader"><option>Scene</option><option>Single</option></select>
+        <div class="bl no-shader"></div>
+
+        <br class="no-shader">
+
+        <span class="no-shader">Emission:<br></span>
+        <span class="info no-shader">Color:    </span> <input type="text" class="material_color_emission pp" />
+        <div class="bl no-shader"></div>
+        <span class="info no-shader">Texture:  </span> <select class="material_map_emission pp no-shader"></select>
+        <div class="bl no-shader"></div>
+        <span class="info no-shader">Intensity:</span> <input class="material_int_emission pp no-shader" type="number" value="0" step="0.001" min="0" max="1">
+        <div class="bl no-shader"></div>
+
+        <br class="no-shader">
+
+        <span class="no-shader">Bump:<br></span>
+        <span class="info no-shader">BumpMap:  </span> <select class="material_bump_map pp no-shader"><option>Ddefault</option></select>
+        <div class="bl no-shader"></div>
+        <span class="info no-shader">BumpScale:</span> <input class="material_bump_scale pp no-shader" type="number" value="0.1" step="0.001" min="0" max="1">
+        <div class="bl no-shader"></div>
+
+        <br class="no-shader">
+
+        <!-- Displacement:<br>
+        <span class="info">displacementMap:  </span> <select class="material_displacement_map"><option>Ddefault</option></select>
+        <div class="bl"></div>
+        <span class="info">displacementBias:</span> <input class="material_displacement_bias" type="number" value="0.1" step="0.001" min="0" max="1">
+        <div class="bl"></div>
+        <span class="info">displacementScale:</span> <input class="material_displacement_scale" type="number" value="0.1" step="0.001" min="0" max="1">
+        <div class="bl"></div>
+
+        <br> -->
+
+        <span class="info no-shader">NormalMap:</span> <select class="material_normal_map pp no-shader"><option>Ddefault</option></select>
+        <div class="bl no-shader"></div>
+
+        <br class="no-shader">
+
+        <span class="no-shader">Ao:<br></span>
+        <span class="info no-shader">aoMap:</span> <select class="material_ao_map pp no-shader"><option>Ddefault</option></select>
+        <div class="bl no-shader"></div>
+        <span class="info no-shader">aoIntensity:</span> <input class="material_ao_int pp no-shader" type="number" value="0" step="0.001" min="0" max="1">
+        <div class="bl no-shader"></div>
+
+        <br class="no-shader">
+
+        <div class="shader">
+            cos w shaderze
+        </div>
+
+        <br>
+    </div>
+
+    <div class="context_settings_div light_settings">
+        Light:<br>
+        <span class="info">Diffuse:</span> <input type="text" class="light_diffuse" />
+        <div class="bl"></div>
+        <br>
+        <span class="info">Specular:</span> <input type="text" class="light_specular" />
+        <div class="bl"></div>
+        <br>
+        <span class="info">Ambient:</span> <input type="text" class="light_ambient" />
+        <div class="bl"></div>
+        <br>
+        <span class="info">Intensity:</span> <input class="light_int pp" type="number" value="1" step="0.1" min="0" max="1">
+        <div class="bl"></div>
+        <div class="point_light">
+            <span class="info">Distance:</span> <input class="light_dis pp" type="number" value="1" step="0.1" min="0">
+            <div class="bl"></div>
+        </div>
+        <div class="spot_light">
+            <span class="info">Angle:   </span> <input class="light_angle pp" type="number" value="1" step="0.1" min="0" max="1">
+            <div class="bl"></div>
+            <span class="info">Penumbra:</span> <input class="light_pen pp" type="number" value="1" step="0.1" min="0" max="1">
+            <div class="bl"></div>
+        </div>
+        <br>
+        <span class="info">Shadow:        </span> <input class="light_shadow pp" type="checkbox">
+        <div class="bl"></div>
+        <span class="info">Shadow Quality:</span> <input class="light_shadow_quality pp" type="number" value="5" step="1" min="0" max="10">
+        <div class="bl"></div>
+        <span class="info">Shadow Near:   </span> <input class="light_shadow_near pp" type="number" value="0.01" step="0.01" min="0" max="100">
+        <div class="bl"></div>
+        <span class="info">Shadow Far:    </span> <input class="light_shadow_far pp" type="number" value="1000" step="1" min="0">
+        <div class="bl"></div>
+    </div>
+
+    <div class="context_settings_div model_settings">
+        Model:<br><br>
+        optimize Mesh: <input class="model_optimize_mesh" type="checkbox"><br>
+        Auto Generate UV: <input class="model_auto_uv" type="checkbox"><br>
+        Auto Generate Normal: <input class="model_auto_normal" type="checkbox"><br>
+        Smoothing Normal: <input class="model_smooth_normal" type="checkbox"><br>
+        Inport Material: <input class="model_inport_material" type="checkbox"><br>
+        <br>
+        <button class="model_add_to_scene">Add to Scene</button><br>
+    </div>
+
+    <div class="context_settings_div camera_settings">
+        Camera:<br>
+        <br>
+        <span class="info">FOV: </span> <input class="camera_fov pp" type="number" value="0" step="0.1" min="0" max="180">
+        <div class="bl"></div>
+        <span class="info">Near:</span> <input class="camera_near pp" type="number" value="0" step="0.01" min="0">
+        <div class="bl"></div>
+        <span class="info">Far: </span> <input class="camera_far pp" type="number" value="0" step="1" min="0">
+        <div class="bl"></div>
+        <span class="info">Zoom:</span> <input class="camera_zoom pp" type="number" value="0" step="0.01" min="0">
+        <div class="bl"></div>
+    </div>
+
+    <div class="context_settings_div scene_settings">
+
+    </div>
+    
+
+</div>

@@ -1,0 +1,21 @@
+{
+  "name": "editorv2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "deasync": "^0.1.12",
+    "electron": "^1.8.2",
+    "electron-debug": "^1.5.0",
+    "jquery": "^3.3.1",
+    "system-sleep": "^1.3.6",
+    "three.js": "^0.77.1",
+    "watchjs": "0.0.0"
+  }
+}

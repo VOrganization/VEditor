@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+
+node_modules
+test
+build.bat
+run.bat
+.vscode
+default_layout.json

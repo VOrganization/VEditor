@@ -1,0 +1,531 @@
+
+<script type="text/javascript">
+    function context_scene(){ 
+        let context = $("div.context_scene").eq($("div.context_scene").length - 1);
+
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+
+        let camera = new THREE.PerspectiveCamera( 75, 1, 0.1, 10000 );
+        camera.position.z = 5;
+
+        let scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x222222);
+        
+        let renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(100, 100);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        context.append(renderer.domElement);
+
+        let material = new THREE.MeshPhongMaterial();
+        material.reflectivity = 0.0;
+        material.refractionRatio = 0.0;
+        material.transparent = true;
+        material.needsUpdate = true;
+        material.emissiveIntensity = 0;
+        material.name = "editor_default_material";
+        material["auto_generate"] = 0;
+        material["generate_in_shader"] = false;
+        material["dynamic_cube"] = false;
+        material["type_engine"] = 0;
+        material["engine_shader"] = null;
+        material["engine_shader_other_textures"] = new Array();
+        material["engine_shader_other_colors"] = new Array();
+        material["engine_shader_other_values"] = new Array();
+
+        scene.rotation.y = 45 * Math.PI / 180;
+        scene.rotation.x = 45 * Math.PI / 180;
+
+        scene.add(new THREE.GridHelper(1000, 1000, 0xffffff, 0x888888));
+        scene.add(new THREE.AmbientLight(0x444444));
+        scene.add(new THREE.DirectionalLight(0xffffff, 0.2));
+
+        let render_function = function(){
+            requestAnimationFrame(render_function);
+			renderer.render(scene, camera);
+        }
+        render_function();
+
+        let calc_object_index = 0;
+        let calc_object = function(_obj, _p){
+            calc_object_index += 1;
+
+            let help = new THREE.AxesHelper(1);
+            help.name = "helper_" + String(calc_object_index);
+            help.position.x = _obj.position.x;
+            help.position.y = _obj.position.y;
+            help.position.z = _obj.position.z;
+
+            help.rotation.x = _obj.rotation._x;
+            help.rotation.y = _obj.rotation._y;
+            help.rotation.z = _obj.rotation._z;
+
+            if(_obj.material === null){
+                _obj.material = material.clone();
+                _obj.material.name = "";
+            }
+            
+
+            if(_obj.type == "Mesh"){
+                _obj.geometry.computeBoundingSphere();
+                let r = _obj.geometry.boundingSphere.radius * 1.5;
+                let box = new THREE.Box3();
+                box.setFromCenterAndSize(new THREE.Vector3(0,0.15,0), new THREE.Vector3(r * _obj.scale.x, r * _obj.scale.y, r * _obj.scale.z));
+                let h = new THREE.Box3Helper(box, 0xffff00);
+                h.name = "helper_box";
+                h.matrixAutoUpdate = true;
+                help.add(h);
+            }
+
+            if(_obj.type == "Group"){
+                let box = new THREE.Box3();
+                box.setFromCenterAndSize(new THREE.Vector3(0,0.15,0), new THREE.Vector3(0.3,0.3,0.3));
+                let h = new THREE.Box3Helper(box, 0xffff00);
+                h.name = "helper_box";
+                h.matrixAutoUpdate = true;
+                help.add(h);
+            }
+
+            if(_obj.type == "PerspectiveCamera"){
+                _obj.aspect = (context.width() / context.height());
+                let h = new THREE.CameraHelper(_obj);
+                h.name = "helper_box";
+                h.matrixAutoUpdate = true;
+                help.add(h);
+            }
+
+            if(_obj.type == "PointLight"){
+                let h = new THREE.PointLightHelper(_obj, _obj.decay);
+                h.name = "helper_box";
+                h.matrixAutoUpdate = true;
+                help.add(h);
+            }
+
+            if(_obj.type == "DirectionalLight"){
+                let h = new THREE.DirectionalLightHelper(_obj, 5);
+                h.name = "helper_box";
+                h.matrixAutoUpdate = true;
+                help.add(h);
+            }
+
+            if(_obj.type == "SpotLight"){
+                let h = new THREE.SpotLightHelper(_obj);
+                h.name = "helper_box";
+                h.matrixAutoUpdate = true;
+                help.add(h);
+            }
+            
+
+            if(_p !== null){
+                _p.add(help);
+            }
+            else{
+                scene.add(help);
+            }
+
+            for (let i = 0; i < _obj.children.length; i++) {
+                calc_object(_obj.children[i], help);
+            }
+        };
+
+        let find_helper = function(_id){
+            let find_obj = function(_obj){
+                if(_obj.name == String("helper_" + String(_id))){
+                    return _obj;
+                }
+                for (let i = 0; i < _obj.children.length; i++) {
+                    let o = find_obj(_obj.children[i]);
+                    if(o !== null){
+                        return o;
+                    }
+                }
+                return null;
+            }
+            
+            for (let i = 0; i < scene.children.length; i++) {
+                let o = find_obj(scene.children[i]);
+                if(o !== null){
+                    return o;
+                }
+            }
+            return null;
+        }
+        
+        let calc_object_helper = function(_obj){
+            let help = find_helper(get_id_object(_obj));
+
+            help.position.x = _obj.position.x;
+            help.position.y = _obj.position.y;
+            help.position.z = _obj.position.z;
+            
+            help.rotation.x = _obj.rotation._x;
+            help.rotation.y = _obj.rotation._y;
+            help.rotation.z = _obj.rotation._z;
+            
+            if(_obj.type == "Mesh"){
+                let m = help.children[0].material.color;
+                help.remove(help.children[0]);
+                _obj.geometry.computeBoundingSphere();
+                let r = _obj.geometry.boundingSphere.radius * 1.5;
+                let box = new THREE.Box3();
+                box.setFromCenterAndSize(new THREE.Vector3(0,0.15,0), new THREE.Vector3(r * _obj.scale.x, r * _obj.scale.y, r * _obj.scale.z));
+                let h = new THREE.Box3Helper(box, 0xffff00);
+                h.name = "helper_box";
+                h.matrixAutoUpdate = true;
+                h.material.color = m;
+                help.add(h);
+            }
+
+            help.updateMatrix();
+        }
+
+
+        function UpdateData(){
+            while(scene.children.length > 0){ 
+                scene.remove(scene.children[0]); 
+            }
+            scene.add(new THREE.GridHelper(1000, 1000, 0xffffff, 0x888888));
+            scene.add(new THREE.AmbientLight(0x444444));
+            scene.add(new THREE.DirectionalLight(0xffffff, 0.2));
+            calc_object_index = 0;
+            for (let i = 0; i < editor_data.data.object.length; i++) {
+                calc_object(editor_data.data.object[i], null);
+                scene.add(editor_data.data.object[i]);
+            }
+            UpdateSelect();
+        }
+
+        let selected_obj = null;
+        let selected_obj_helper = null;
+        let prev_obj_material = null;
+        function UpdateSelect(){
+            if(selected_obj !== null){
+                if(selected_obj.type == "SpotLight"){
+                    selected_obj_helper.children[0].cone.material.color = prev_obj_material;
+                }
+                else if(selected_obj.type == "DirectionalLight"){
+                    selected_obj_helper.children[0].lightPlane.material.color = prev_obj_material;
+                }
+                else{
+                    selected_obj_helper.children[0].material.color = prev_obj_material;
+                }
+            }
+
+            if(editor_data_select.type == "object"){
+                selected_obj = find_object(editor_data_select.data);
+                selected_obj_helper = find_helper(editor_data_select.data);
+                
+                if(selected_obj !== null){
+                    if(selected_obj.type == "SpotLight"){
+                        prev_obj_material = selected_obj_helper.children[0].cone.material.color;
+                        selected_obj_helper.children[0].cone.material.color = new THREE.Color(0x0000ff);
+                    }
+                    else if(selected_obj.type == "DirectionalLight"){
+                        prev_obj_material = selected_obj_helper.children[0].lightPlane.material.color;
+                        selected_obj_helper.children[0].lightPlane.material.color = new THREE.Color(0x0000ff);
+                    }
+                    else{
+                        prev_obj_material = selected_obj_helper.children[0].material.color;
+                        selected_obj_helper.children[0].material.color = new THREE.Color(0x0000ff);
+                    }
+                }
+            }
+        }
+
+        let view_type = -1;
+        let view_orient = -1;
+        let start_x = -1;
+        let start_y = -1;
+        let start_x_cam = -1;
+        let start_y_cam = -1;
+
+        let start_data;
+
+        $(document).keypress(function(e) {
+            if(editor_data_select.type == "object"){
+                if(view_type > 3){
+                    if(e.key == "x"){
+                        view_orient = 1;
+                    }
+                    if(e.key == "y"){
+                        view_orient = 2;
+                    }
+                    if(e.key == "z"){
+                        view_orient = 3;
+                    }
+                }
+                else{
+                    start_x = -1;
+                    start_y = -1;
+                    view_orient = -1;
+                    if(e.key == "s"){
+                        view_type = 4;
+                        start_data = {x: selected_obj.scale.x, y: selected_obj.scale.y, z: selected_obj.scale.z};
+                    }
+                    if(e.key == "r"){
+                        view_type = 5;
+                        start_data = {x: selected_obj.rotation.x, y: selected_obj.rotation.y, z: selected_obj.rotation.z};
+                    }
+                    if(e.key == "g"){
+                        view_type = 6;
+                        start_data = {x: selected_obj.position.x, y: selected_obj.position.y, z: selected_obj.position.z};
+                    }
+                }
+            }
+            if(editor_data_select.type == "object" && e.key == "a"){
+                editor_data_select.type = null;
+                editor_data_select.data = null;
+            }
+            if(editor_data_select.type == "object" && e.key == "d"){
+                let obj = selected_obj.clone();
+                if(selected_obj.parent !== null && selected_obj.parent.type != "Scene"){
+                    find_object(get_id_object(selected_obj.parent)).add(obj);
+                }
+                else{
+                    editor_data.data.object.push(obj);
+                }
+                editor_update_data();
+                editor_data_select.type = "object";
+                editor_data_select.data = get_id_object(obj);
+            }
+        });
+
+        $(document).keyup(function(e){
+            if(editor_data_select.type == "object" && e.key == "Delete"){
+                if(selected_obj.parent !== null && selected_obj.parent.type != "Scene"){
+                    selected_obj.parent.remove(selected_obj);
+                }
+                else{
+                    editor_data.data.object.splice(editor_data.data.object.indexOf(selected_obj), 1);
+                }
+                editor_data_select.type = null;
+                editor_data_select.data = null;
+                editor_update_data();
+            }
+        });
+
+        context.bind("mousedown", function(e){
+            if(view_type > 3 && e.button == 2){
+                if(view_type == 4){
+                    selected_obj.scale.x = start_data.x;
+                    selected_obj.scale.y = start_data.y;
+                    selected_obj.scale.z = start_data.z;
+                }
+                if(view_type == 5){
+                    selected_obj.rotation.x = start_data.x;
+                    selected_obj.rotation.y = start_data.y;
+                    selected_obj.rotation.z = start_data.z;
+                    selected_obj_helper.rotation.x = start_data.x;
+                    selected_obj_helper.rotation.y = start_data.y;
+                    selected_obj_helper.rotation.z = start_data.z;
+                }
+                if(view_type == 6){
+                    selected_obj.position.x = start_data.x;
+                    selected_obj.position.y = start_data.y;
+                    selected_obj.position.z = start_data.z;
+                    selected_obj_helper.position.x = start_data.x;
+                    selected_obj_helper.position.y = start_data.y;
+                    selected_obj_helper.position.z = start_data.z;
+                }
+            }
+            else{
+                view_type = e.button;
+                start_x = e.pageX;
+                start_y = e.pageY;
+                start_x_cam = scene.rotation.x;
+                start_y_cam = scene.rotation.y;
+                if(e.button == 2){
+                    mouse.x = ( (e.pageX - context.offset().left) / context.width() ) * 2 - 1;
+                    mouse.y = - ( (e.pageY - context.offset().top) / context.height() ) * 2 + 1;
+
+                    raycaster.setFromCamera( mouse, camera );
+                    let intersects = raycaster.intersectObjects(scene.children, true);
+                    let _find = false;
+                    for ( let i = 0; i < intersects.length; i++ ) {
+                        if(intersects[i].distance < camera.near){
+                            continue;
+                        }
+                        if(intersects[i].face !== null){
+                            let _id = get_id_object(intersects[i].object);
+                            if(_id !== null){
+                                if(editor_data_select.type == "object" && _id == editor_data_select.data){
+                                    editor_data_select.type = null;
+                                    editor_data_select.data = null;
+                                }
+                                else{
+                                    editor_data_select.type = "object";
+                                    editor_data_select.data = _id;
+                                }
+                                _find = true;
+                            }
+                            else{
+                                if(String(intersects[i].object.name).indexOf("helper_box") > -1){
+                                    let id = Number(String(intersects[i].object.parent.name).replace("helper_", ""));
+                                    if(editor_data_select.type == "object" && id == editor_data_select.data){
+                                        editor_data_select.type = null;
+                                        editor_data_select.data = null;
+                                    }
+                                    else{
+                                        editor_data_select.type = "object";
+                                        editor_data_select.data = id;
+                                    }
+                                    _find = true;
+                                }
+                            }
+                            if(_find){
+                                break;
+                            }
+                        }
+                    }
+
+
+
+
+                }
+            }
+        });
+
+        context.bind("mousemove", function(e){
+            if(view_type == 1){
+                let _x = e.pageX - start_x;
+                let _y = e.pageY - start_y;
+                scene.rotation.y = start_y_cam + ((e.pageX - start_x)*0.5) * Math.PI / 180;
+                scene.rotation.x = start_x_cam + ((e.pageY - start_y)*0.5) * Math.PI / 180;
+            }
+
+            if(view_type > 3){
+                if(start_x == -1 && start_y == -1){
+                    start_x = e.pageX;
+                    start_y = e.pageY;
+                }
+                let p = ((e.pageX - start_x)*0.01 + (e.pageY - start_y)*0.01);
+
+                if(view_type == 4){
+                    if(view_orient == -1){
+                        selected_obj.scale.x = start_data.x + p;
+                        selected_obj.scale.y = start_data.y + p;
+                        selected_obj.scale.z = start_data.z + p;
+                    }
+                    if(view_orient == 1){
+                        selected_obj.scale.x = start_data.x + p;
+                    }
+                    if(view_orient == 2){
+                        selected_obj.scale.y = start_data.y + p;
+                    }
+                    if(view_orient == 3){
+                        selected_obj.scale.z = start_data.z + p;
+                    }
+
+                    if(selected_obj.scale.x < 0){
+                        selected_obj.scale.x = 0;
+                    }
+                    if(selected_obj.scale.y < 0){
+                        selected_obj.scale.y = 0;
+                    }
+                    if(selected_obj.scale.z < 0){
+                        selected_obj.scale.z = 0;
+                    }
+                }
+
+                if(view_type == 5){
+                    if(view_orient == -1){
+                        selected_obj.rotation.x = start_data.x + (e.pageY - start_y)*0.01;
+                        selected_obj.rotation.y = start_data.y + (e.pageX - start_x)*0.01;
+                    }
+                    if(view_orient == 1){
+                        selected_obj.rotation.x = start_data.x + p;
+                    }
+                    if(view_orient == 2){
+                        selected_obj.rotation.y = start_data.y + p;
+                    }
+                    if(view_orient == 3){
+                        selected_obj.rotation.z = start_data.z + p;
+                    }
+                }
+
+                if(view_type == 6){
+                    if(view_orient == -1){
+                        mouse.x = ( (e.pageX - context.offset().left) / context.width() ) * 2 - 1;
+                        mouse.y = - ( (e.pageY - context.offset().top) / context.height() ) * 2 + 1;
+
+                        var a = new THREE.Euler(scene.rotation.x, scene.rotation.y, scene.rotation.z, "XYZ");
+                        var b = new THREE.Vector3(start_data.x + mouse.x * (-10), start_data.y + mouse.y * 10, start_data.z);
+                        b.applyEuler(a);
+
+                        selected_obj.position.x = b.x;
+                        selected_obj.position.y = b.y;
+                        selected_obj.position.z = b.z;
+
+                    }
+                    if(view_orient == 1){
+                        selected_obj.position.x = start_data.x + p;
+                    }
+                    if(view_orient == 2){
+                        selected_obj.position.y = start_data.y - p;
+                    }
+                    if(view_orient == 3){
+                        selected_obj.position.z = start_data.z + p;
+                    }
+                }
+
+                calc_object_helper(selected_obj);
+
+                // if(selected_obj_helper !== null){
+                //     selected_obj_helper.position.x = selected_obj.position.x;
+                //     selected_obj_helper.position.y = selected_obj.position.y;
+                //     selected_obj_helper.position.z = selected_obj.position.z;
+                //     selected_obj_helper.rotation.x = selected_obj.rotation.x;
+                //     selected_obj_helper.rotation.y = selected_obj.rotation.y;
+                //     selected_obj_helper.rotation.z = selected_obj.rotation.z;
+                //     for (let i = 0; i < selected_obj.children.length; i++) {
+                //         let helper = find_helper(get_id_object(selected_obj.children[i]));
+                //         helper.position.x = selected_obj.position.x + selected_obj.children[i].position.x;
+                //         helper.position.y = selected_obj.position.y + selected_obj.children[i].position.y;
+                //         helper.position.z = selected_obj.position.z + selected_obj.children[i].position.z;
+                //         helper.rotation.x = selected_obj.rotation.x + selected_obj.children[i].rotation.x;
+                //         helper.rotation.y = selected_obj.rotation.y + selected_obj.children[i].rotation.y;
+                //         helper.rotation.z = selected_obj.rotation.z + selected_obj.children[i].rotation.z;
+                //         helper.updateMatrix();
+                //     }
+                //     // selected_obj.updateMatrixWorld();
+                //     // selected_obj_helper.matrixAutoUpdate = false;
+                //     // selected_obj_helper.matrix = selected_obj.matrixWorld;
+                //     selected_obj_helper.updateMatrix();
+                // }
+
+            }
+        });
+
+        context.bind("mouseup", function(e){
+            view_type = -1;
+        });
+
+        context.bind("mousewheel", function(e) {
+            if(e.ctrlKey){
+                camera.position.x += e.deltaY * 0.5;
+            }
+            else if(e.shiftKey){
+                camera.position.y += e.deltaY * 0.5;
+            }
+            else{
+                camera.position.z -= e.deltaY * 0.5;
+                if(camera.position.z <= 0){
+                    camera.position.z = 0.01;
+                }
+            }
+        });
+
+        context.resize(function(){
+            camera.aspect = (context.width() / context.height());
+            camera.updateProjectionMatrix();
+            renderer.setSize( context.width(), context.height() );
+        });
+
+        editor_call_back.push(UpdateData);
+        editor_select_call_back.push(UpdateSelect);
+    }
+    context_scene();
+</script>
+
+<div class="context_scene" style="width: 100%; height: 100%;"></div>

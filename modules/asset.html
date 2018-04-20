@@ -1,0 +1,225 @@
+
+
+<style>
+    .context_asset{
+        width: 100%;
+        height: 100%;
+    }
+
+    .context_asset_middle{
+        width: 80%;
+        height: 100%;
+    }
+
+    .context_asset_header{
+        width: 100%;
+        padding: 6px;
+        /* background: linear-gradient(to bottom, var(--main-bg-color0) 0%, var(--main-bg-color1) 100%); */
+        color: var(--main-font-color0);
+        border-bottom: 2px solid var(--main-separator-solor);
+        box-sizing: border-box;
+        padding-left: 10px;
+        font-size: 18px;
+        letter-spacing: 1px;
+    }
+
+    .context_asset_header > .icon-right-open{
+        font-size: 10px;
+        color: var(--main-font-color1);
+    }
+
+    .context_asset_header > .context_asset_header_btn:hover{
+        cursor: pointer;
+    }
+
+    .context_asset_data{
+        display: -ms-flexbox;
+        display: -webkit-flex;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-content: flex-start;
+        align-items: flex-start;
+        padding-top: 5px;
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .context_asset_item{
+        border: 1px solid var(--main-separator-solor);
+        background-color: var(--main-element-color0);
+        text-align: center;
+        padding-top: 5px;
+        margin: 5px;
+        color: var(--main-font-color0);
+        text-shadow: 0 0 1px var(--main-font-shadow);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .context_asset_item:hover{
+        cursor: pointer;
+        background-color: var(--main-element-color1);
+    }
+
+    .context_asset_item:first-child{
+        margin-left: 10px;
+    }
+
+    .context_asset_item_icon{
+        font-size: #fff;
+        font-size: 30px;
+    }
+
+    .context_asset_item_name{
+        font-size: 14px;
+        margin-top: 5px;
+        background-color: var(--main-element-color1);
+        letter-spacing: 1px;
+        padding: 3px;
+    }
+
+</style>
+
+<script type="text/javascript">
+    function context_asset(){ 
+        let context = $("div.context_asset").eq($("div.context_asset").length - 1);
+
+        function calc_path(){
+            let path_dir = context.children(".context_asset_header").html();
+            path_dir = path_dir.replace('<span class="icon-right-open"></span>', "/");
+            path_dir = path_dir.replace('<span class="context_asset_header_btn">', "");
+            path_dir = path_dir.replace('</span>', "");
+            path_dir = path_dir.replace("asset/", "");
+            return path_dir;
+        }
+
+        let watcher = null;
+
+        function Update(){
+
+            context.children(".context_asset_data").html("");
+            let path_dir = calc_path();
+
+            let file_data = new Array();
+            if(editor_data.dir !== ""){
+                file_data = fs.readdirSync(editor_data.dir + path_dir);
+            }
+
+            for (let i = 0; i < file_data.length; i++) {
+                if(file_data[i] == "project.json" || file_data[i] == "layout.json"){
+                    continue;
+                }
+
+                context.children(".context_asset_data").append(`
+                <div class="context_asset_item" id="` + (path_dir + file_data[i]) + `">
+                    <div class="context_asset_item_icon"><span class="` + get_file_icon(file_data[i]) + `"></span></div>
+                    <div class="context_asset_item_name">` + file_data[i] + `</div>
+                </div>
+                `);
+                
+                if(String(file_data[i]).indexOf(".") > -1){
+                    let found = false;
+                    for (let j = 0; j < editor_data.data.files.length; j++) {
+                        if(editor_data.data.files[j].path == path_dir + file_data[i]){
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(!found){
+                        editor_data.data.files.push({type: get_file_type(file_data[i]), path: path_dir + file_data[i], name: file_data[i]});
+                    }
+                }
+
+                if(watcher != null){
+                    watcher.close();
+                }
+
+                if(editor_data.dir !== ""){
+                    watcher = fs.watch(editor_data.dir, function(e,fn){
+                        // console.log(fn);
+                        let file_path = String(fn).replace(editor_data.dir, "");
+                        let found = false;
+                        for (let i = 0; i < editor_data.data.files.length; i++) {
+                            if(editor_data.data.files[i].path == file_path){
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(!found){
+                            editor_data.data.files.push({type: get_file_type(fn), path: file_path, name: path.basename(fn)});
+                            Update();
+                        }
+                    });
+                }
+            }
+
+            for (let i = 0; i < editor_data.data.files.length; i++) {
+                let f = editor_data.data.files[i];
+                load_file(f);
+            }
+
+            $(".context_asset_header_btn").click(function(){
+                let name = $(this).html();
+                if(name == "asset"){
+                    context.children(".context_asset_header").html(`<span class="context_asset_header_btn">asset</span><span class="icon-right-open"></span>`);
+                }
+                else{
+                    let path0 = calc_path();
+                    path0 = path0.substr(path0.indexOf(name), path0.length);
+                    alert(path0);
+                }
+                Update();
+            });
+
+            $(".context_asset_item").click(function(){
+                let name = $(this).attr("id");
+                if(name.indexOf(".") > -1){
+                    editor_data_select.type = "file";
+                    editor_data_select.data = name;
+                }
+                else{
+                    context.children(".context_asset_header").append(`<span class="context_asset_header_btn">` + name + `</span><span class="icon-right-open"></span>`);
+                    Update();
+                }
+            });
+        }
+
+        Update();
+        editor_call_back.push(Update);
+
+        document.ondragover = document.ondrop = (ev) => {
+            ev.preventDefault();
+        }
+        document.body.ondrop = (ev) => {
+            let path_dir = calc_path();
+
+            for (let i = 0; i < ev.dataTransfer.files.length; i++) {
+                let file_name = path.basename(ev.dataTransfer.files[i].path);
+                fs.writeFileSync(editor_data.dir + "/" + path_dir + file_name, fs.readFileSync(ev.dataTransfer.files[i].path));
+                editor_data.data.files.push({type: get_file_type(file_name), path: path_dir + file_name, name: file_name});
+            }
+
+            Update();
+            ev.preventDefault();
+        }
+    }
+    context_asset();
+
+</script>
+
+<div class="context_asset">
+
+        <div class="context_asset_header"><span class="context_asset_header_btn">asset</span><span class="icon-right-open"></span></div>
+        <div class="context_asset_data">
+            <div class="context_asset_item">
+                <div class="context_asset_item_icon"><span class="icon-folder"></span></div>
+                <div class="context_asset_item_name">Testy</div>
+            </div>
+            <div class="context_asset_item">
+                <div class="context_asset_item_icon"><span class="icon-folder"></span></div>
+                <div class="context_asset_item_name">Testy</div>
+            </div>
+        </div>
+
+</div>
