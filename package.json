@@ -1,13 +1,13 @@
 {
   "name": "editorv2",
   "version": "1.0.0",
-  "description": "",
+  "description": "Editor for NNGEngine",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "./node_modules/.bin/electron ."
   },
-  "author": "",
-  "license": "ISC",
+  "author": "wiktortr",
+  "license": "GNU",
   "dependencies": {
     "crypto": "^1.0.1",
     "deasync": "^0.1.12",
