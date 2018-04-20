@@ -10,7 +10,11 @@ const fs = require("fs");
 
 app.on("ready", function(){
 
-    let mainwindow = new electron.BrowserWindow({width: 800, height: 600, icon: __dirname + "/icon.ico"});
+    let mainwindow = new electron.BrowserWindow({
+        width: 800,
+        height: 600,
+        icon: path.join(__dirname, '/iconT.png')
+    });
 
     mainwindow.webContents.toggleDevTools();
 
