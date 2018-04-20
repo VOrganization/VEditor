@@ -32,9 +32,16 @@
 *.app
 
 
+# Visual Studio Code ignore
+.vscode
+
+# Node.js and NPM ignore
 node_modules
-test
+package-lock.json
+
+# Win Test script
 build.bat
 run.bat
-.vscode
-default_layout.json
+
+# Test project
+test
