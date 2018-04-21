@@ -20,6 +20,12 @@ function close_windows(){
     app.exit();
 }
 
+global.editor = {
+    modules: new Array(),
+    defaultLayout: null,
+    
+};
+
 app.on("ready", function(){
 
     splashScreen = new electron.BrowserWindow({
