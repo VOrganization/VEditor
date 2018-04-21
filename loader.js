@@ -67,7 +67,10 @@
 
         if(ext == ".js" && lp.indexOf(".node.js") != -1){
             try {
-                remote.getGlobal("editor").modules.push(require("./" + lp));
+                editor.modules.push({
+                    class: require("./" + lp),
+                    name: path.basename(lp, ".node.js")
+                });
                 out.state = 0;
             } catch (error) {
                 out.state = 2;   
@@ -98,7 +101,7 @@
     $(document).ready(function(){
 
         try {
-            remote.getGlobal("editor").defaultLayout = JSON.parse(fs.readFileSync("default_layout.json"));
+           editor.defaultLayout = JSON.parse(fs.readFileSync("default_layout.json"));
         } catch (error) {
             console.log("Can't Load Default Layout!!!");
         }

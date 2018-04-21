@@ -7,14 +7,34 @@ const Tray = remote.Tray;
 const Window = remote.getCurrentWindow();
 const WebContext = remote.getCurrentWebContents();
 
+
 let module_path = "Modules/"
 
-let myLayout = new GoldenLayout(remote.getGlobal("editor").defaultLayout);
-myLayout.registerComponent("testComponent", function(container, componentState){
-    try {
-        container.getElement().html(fs.readFileSync(module_path + componentState.label + ".html").toString());
-    } catch (err) {
+editor.layout = new GoldenLayout(editor.defaultLayout);
+editor.layout.registerComponent("testComponent", function(container, componentState){
+    let found = false;
+    for (let i = 0; i < editor.modules.length; i++) {
+        if(editor.modules[i].name == componentState.label){
+            found = true;
+            let obj = new editor.modules[i].class();
+            if(obj.type != "display"){
+                found = false;
+                break;
+            }
+            container.getElement().html(obj.getHTML());
+            editor.modulesUsage.push(obj);
+            break;
+        }
+    }
+    if(!found){
         container.getElement().html("<h2>Not found</h2>");
     }
 });
-myLayout.init();
+editor.layout.init();
+
+
+//dokończyć przyznawanie contextow
+for (let i = 0; i < editor.modulesUsage.length; i++) {
+    
+    
+}

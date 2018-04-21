@@ -22,8 +22,9 @@ function close_windows(){
 
 global.editor = {
     modules: new Array(),
+    modulesUsage: new Array(),
     defaultLayout: null,
-    
+    layout: new Array(),
 };
 
 app.on("ready", function(){
