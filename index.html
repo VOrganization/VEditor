@@ -4,7 +4,7 @@
         <title>EditorV2</title>
         <meta charset="UTF-8">
 
-        <link rel="stylesheet" href="fontello/css/fontello.css">
+        <!-- <link rel="stylesheet" href="fontello/css/fontello.css">
         <link rel="stylesheet" href="goldenlayout/goldenlayout-base.css">
         <link rel="stylesheet" href="lib/spectrum/spectrum.css">
         <link rel="stylesheet" href="goldenlayout/goldenlayout-dark-theme.css">
@@ -58,25 +58,32 @@
         <script src="lib/three.js/loaders/XLoader.js"></script>
 
         <script src="lib/fun.js"></script>
-        <script src="main.js"></script>
+        <script src="main.js"></script> -->
+
+        <link rel="stylesheet" href="font.css">
+        <link rel="stylesheet" href="shpash-screen.css">
 
     </head>
 
     <body>
 
-        <!-- <div class="modal">
-            <div>
-                <div class="modal-header">
-                    header
-                </div>
-                <div class="modal-context">
-                    context                    
-                </div>
-                <div class="modal-footer">
-                    footer
-                </div>
+        <div class="splash-screen">
+            <div class="splash-screen-title">
+                <img src="ikonaT.png">
             </div>
-        </div> -->
+            <div class="splash-screen-loader">
+                <div class="spinner"></div>
+            </div>
+            <div class="splash-screen-load-info">
+                load: modules/save.js
+            </div>
+            <div class="splash-screen-footer">
+                By wiktortr
+            </div>
+        </div>
+
+        <script>window.$ = window.jQuery = require('jquery');</script>
+        <script src="renderer.js"></script>
 
     </body>
 

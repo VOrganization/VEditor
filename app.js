@@ -11,14 +11,12 @@ const fs = require("fs");
 app.on("ready", function(){
 
     let mainwindow = new electron.BrowserWindow({
-        width: 800,
-        height: 600,
-        icon: path.join(__dirname, '/iconT.png')
+        width: 400,
+        height: 490,
+        icon: path.join(__dirname, '/iconT.ico'),
+        frame: false
+
     });
-
-    mainwindow.webContents.toggleDevTools();
-
-    mainwindow.maximize();
 
     mainwindow.loadURL(url.format({
         pathname: path.join(__dirname, 'index.html'),
