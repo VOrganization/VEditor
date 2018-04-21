@@ -12,6 +12,8 @@ let splashScreen;
 let mainwindow;
 let loaded = false;
 
+let icon_path = path.join(__dirname, "ResourcesStatic", "icons", "iconT.ico");
+
 function close_windows(){
     mainwindow = null;
     splashScreen = null;
@@ -23,7 +25,7 @@ app.on("ready", function(){
     splashScreen = new electron.BrowserWindow({
         width: 400,
         height: 490,
-        icon: path.join(__dirname, "ikonaT.ico"),
+        icon: icon_path,
         frame: false
     });
 
@@ -38,7 +40,7 @@ app.on("ready", function(){
     mainwindow = new electron.BrowserWindow({
         width: mainwindowSize.width,
         height: mainwindowSize.height,
-        icon: path.join(__dirname, "ikonaT.ico"),
+        icon: icon_path,
         show: false
     });
 

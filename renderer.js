@@ -44,12 +44,12 @@ function loadjscssfile(filename, filetype){
 
 function loadRes(p){
     let ext = path.extname(p).toLocaleLowerCase();
-    console.log(ext)
+    let lp = String(p).substr(__dirname.length + 1);
     if(ext == ".css"){
-        loadjscssfile(p, "css");
+        loadjscssfile(lp, "css");
     }
     else if(ext == ".js"){
-        loadjscssfile(p, "js");
+        loadjscssfile(lp, "js");
     }
     else if(ext == ".node.js"){
         
