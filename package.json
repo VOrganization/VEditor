@@ -4,7 +4,12 @@
   "description": "Editor for NNGEngine",
   "main": "app.js",
   "scripts": {
-    "start": "./node_modules/.bin/electron ."
+    "start": "./node_modules/.bin/electron .",
+    "package-all": "electron-packager . EditorV2 --overwrite --asar --platform=all --arch=all --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
+    "package-win32": "electron-packager . EditorV2 --overwrite --asar --platform=win32 --arch=ia32 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
+    "package-win64": "electron-packager . EditorV2 --overwrite --asar --platform=win32 --arch=x64 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
+    "package-mac": "electron-packager . EditorV2 --overwrite --asar --platform=darwin --arch=x64 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
+    "package-linux": "electron-packager . EditorV2 --overwrite --asar --platform=linux --arch=x64 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic"
   },
   "author": "wiktortr",
   "license": "GNU",

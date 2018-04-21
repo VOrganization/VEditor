@@ -6,8 +6,7 @@ node_modules
 package-lock.json
 
 # Electron ignore
-EditorV2-win32-ia32
-EditorV2-win32-x64
+builds
 
 # Win Test script
 build.bat
