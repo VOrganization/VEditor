@@ -7,6 +7,17 @@ const Tray = remote.Tray;
 const Window = remote.getCurrentWindow();
 const WebContext = remote.getCurrentWebContents();
 
+const fs = require("fs");
+const path = require("path");
+
+function CallFunctionFromModules(fun){
+    for (let i = 0; i < editor.modulesUsage.length; i++) {
+        if(editor.modulesUsage[i][fun] !== null && editor.modulesUsage[i][fun] !== undefined){
+            editor.modulesUsage[i][fun](editor);
+        }
+    }
+}
+
 // Init Layout
 {
     editor.layout = new GoldenLayout(editor.defaultLayout);
@@ -70,8 +81,12 @@ const WebContext = remote.getCurrentWebContents();
                                     extensions: [ "nngp" ]
                                 }
                             ]
-                        }, function(files){
-                            console.log(files);
+                        }, function(file){
+                            if(file !== undefined){
+                                editor.filename = file[0];
+                                editor.dirname = path.dirname(file[0]);
+                                CallFunctionFromModules("loadCallback");
+                            }
                         });
                     }
                 },
@@ -85,6 +100,23 @@ const WebContext = remote.getCurrentWebContents();
                 {
                     label: "New Project",
                     accelerator: 'Ctrl+Shift+N',
+                    click(){
+                        dialog.showSaveDialog(Window, {
+                            title: "Create Project",
+                            filters: [
+                                {
+                                    name: "Project File",
+                                    extensions: [ "nngp" ]
+                                }
+                            ]
+                        }, function(files){
+                            if(file !== undefined){
+                                editor.filename = file[0];
+                                editor.dirname = path.dirname(file[0]);
+                                CallFunctionFromModules("createCallback");
+                            }
+                        });
+                    }
                 },
                 {
                     label: "New File",

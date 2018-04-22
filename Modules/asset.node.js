@@ -25,6 +25,7 @@ module.exports = class{
 
         this.saveCallback = null;
         this.loadCallback = this.Update;
+        this.createCallback = null;
         this.exportCallback = null;
         this.importCallback = null;
         this.exitCallback = this.Update;
@@ -49,7 +50,7 @@ module.exports = class{
     }
 
     Update(editor){
-
+        alert("Update Asset");
     }
 
     setContainer(jqueryObject){

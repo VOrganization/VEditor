@@ -7,6 +7,7 @@ module.exports = class{
 
         this.saveCallback = null;
         this.loadCallback = null;
+        this.createCallback = null;
         this.exportCallback = null;
         this.importCallback = null;
         this.exitCallback = null;
