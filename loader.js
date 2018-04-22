@@ -109,10 +109,11 @@
         for (let i = 0; i < res_to_load.length; i++) {
             recurentLoop(path.join(__dirname, res_to_load[i]));
         }
-        ipc.send("load_msg", {state: 10});
-        Window.show();
-        Window.maximize();
 
         loadjscssfile("main.js", "js");
+
+        Window.maximize();
+        ipc.send("load_msg", {state: 10});
+        Window.show();
     });
 }

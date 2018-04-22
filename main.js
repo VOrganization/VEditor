@@ -32,9 +32,21 @@ editor.layout.registerComponent("testComponent", function(container, componentSt
 });
 editor.layout.init();
 
-
-//dokończyć przyznawanie contextow
-for (let i = 0; i < editor.modulesUsage.length; i++) {
-    
-    
+{
+    let usage = new Array();
+    for (let i = 0; i < editor.modulesUsage.length; i++) {
+        let counter = 0;
+        for (let j = 0; j < usage.length; j++) {
+            if(usage[j] == editor.modulesUsage[i].name){
+                counter += 1;
+            }
+        }
+        if(counter == 0){
+            usage.push(editor.modulesUsage[i].name);
+            editor.modulesUsage[i].setContainer($("." + editor.modulesUsage[i].getContainerName()));
+        }
+        else{
+            editor.modulesUsage[i].setContainer($("." + editor.modulesUsage[i].getContainerName()).eq(counter));
+        }
+    }
 }

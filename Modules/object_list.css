@@ -1,0 +1,48 @@
+.context_object_list{
+    width: 100%;
+    height: 100%;
+    white-space: nowrap;
+    overflow: auto;
+}
+
+.context_object_list > ul.context{
+    display: block;
+    overflow: auto;
+    padding: 0px;
+    margin: 15px;
+    box-sizing: border-box;
+}
+
+.context_object_list > ul.context, .object_list_item_children{
+    list-style-type: none;
+}
+
+.object_list_item{
+    margin-top: 3px;
+    margin-bottom: 3px;
+    color: var(--main-font-color0);
+}
+
+.object_list_item > div{
+    float: left;
+}
+
+.object_list_icon > img{
+    width: 15px;
+    height: 15px;
+    filter: invert(50%);
+}
+
+.object_list_name{
+    margin-left: 3px;
+    transition: all 0.2s ease-in-out;
+}
+
+.object_list_name:hover{
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.object_list_item_select > .object_list_name{
+   color: var(--main-font-color1);
+}
