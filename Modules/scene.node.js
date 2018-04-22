@@ -1,7 +1,10 @@
 module.exports = class{
     constructor(){
         this.type = "display";
-        this.name = "context_scene";
+        this.name = "scene";
+        this.containerName = "context_scene";
+        this.html = `<div class="context_scene" style="width: 100%; height: 100%;"></div>`;
+
         this.saveCallback = null;
         this.loadCallback = null;
         this.exportCallback = null;
@@ -15,13 +18,6 @@ module.exports = class{
         
     }
 
-    getHTML(){
-        return `<div class="context_scene" style="width: 100%; height: 100%;"></div>`;
-    }
-
-    getContainerName(){
-        return "context_scene";
-    }
 
     setContainer(jqueryObject){
         this.container = jqueryObject;

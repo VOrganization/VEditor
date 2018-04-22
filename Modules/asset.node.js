@@ -1,22 +1,11 @@
+const fs = require("fs");
+
 module.exports = class{
     constructor(){
         this.type = "display";
         this.name = "asset";
-        this.saveCallback = null;
-        this.loadCallback = null;
-        this.exportCallback = null;
-        this.importCallback = null;
-        this.exitCallback = null;
-
-        this.container = null;
-    }
-
-    destroy() {
-        
-    }
-
-    getHTML(){
-        return `
+        this.containerName = "context_asset";
+        this.html = `
         <div class="context_asset">
             <div class="context_asset_header"><span class="context_asset_header_btn">asset</span><span class="icon-right-open"></span></div>
             <div class="context_asset_data">
@@ -29,17 +18,43 @@ module.exports = class{
                     <div class="context_asset_item_name">Testy</div>
                 </div>
             </div>
-        </div>
-        `;
+        </div>`;
+        
+        this.container = null;
+        this.watcher = null;
+
+        this.saveCallback = null;
+        this.loadCallback = this.Update;
+        this.exportCallback = null;
+        this.importCallback = null;
+        this.exitCallback = this.Update;
+
     }
 
-    getContainerName(){
-        return "context_asset";
+    destroy() {
+        
+    }
+
+    calcPath(){
+        let path_dir = this.container.children(".context_asset_header").html();
+        path_dir = path_dir.replace('<span class="icon-right-open"></span>', "/");
+        path_dir = path_dir.replace('<span class="context_asset_header_btn">', "");
+        path_dir = path_dir.replace('</span>', "");
+        path_dir = path_dir.replace("asset/", "");
+        return path_dir;
+    }
+
+    CalcData(){
+        this.container.children(".context_asset_data").html("");
+    }
+
+    Update(editor){
+
     }
 
     setContainer(jqueryObject){
         this.container = jqueryObject;
-
+        this.CalcData();
         //$(this.container).html("Hello World");
     }
 }

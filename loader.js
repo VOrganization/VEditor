@@ -28,6 +28,17 @@
     }
 
     function loadjscssfile(filename, filetype){
+        // try {
+        //     let context = fs.readFileSync(filename);
+        //     if (filetype=="js"){
+        //         $("head").append(`<script type="text/javascript">` + context + `</script>`);
+        //     }
+        //     if(filetype == "css"){
+        //         $("head").append(`<style>` + context + `</style>`);
+        //     }
+        // } catch (error) {
+        //     console.log("Error Load RES: " + filename);
+        // }
         if (filetype=="js"){
             var fileref = document.createElement('script')
             fileref.setAttribute("type","text/javascript")
@@ -45,9 +56,9 @@
 
     function loadRes(p){
         let ext = path.extname(p).toLocaleLowerCase();
-        console.log(ext);
+        //console.log(ext);
         let lp = String(p).substr(__dirname.length + 1);
-        console.log(lp);
+        //console.log(lp);
 
         let out = {
             state: 2,

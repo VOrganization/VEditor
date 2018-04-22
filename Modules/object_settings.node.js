@@ -1,22 +1,9 @@
 module.exports = class{
     constructor(){
         this.type = "display";
-        this.name = "context_settings";
-        this.saveCallback = null;
-        this.loadCallback = null;
-        this.exportCallback = null;
-        this.importCallback = null;
-        this.exitCallback = null;
-
-        this.container = null;
-    }
-
-    destroy() {
-        
-    }
-
-    getHTML(){
-        return `
+        this.name = "object_settings";
+        this.containerName = "context_settings";
+        this.html = `
         <div class="context_settings">
             <div class="context_settings_header">
                 <div class="context_settings_header_icon">
@@ -225,10 +212,18 @@ module.exports = class{
 
         </div>
         `;
+
+        this.saveCallback = null;
+        this.loadCallback = null;
+        this.exportCallback = null;
+        this.importCallback = null;
+        this.exitCallback = null;
+
+        this.container = null;
     }
 
-    getContainerName(){
-        return "context_settings";
+    destroy() {
+        
     }
 
     setContainer(jqueryObject){

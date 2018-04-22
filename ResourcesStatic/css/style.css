@@ -1,8 +1,3 @@
-@font-face {
-    font-family: "Lato";
-    src: url(res/font/Lato-Regular.ttf);
-}
-
 body{
     font-family: "Lato";
     --main-bg-color0: #222222;
