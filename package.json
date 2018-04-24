@@ -1,15 +1,15 @@
 {
-  "name": "editorv2",
+  "name": "VEngine",
   "version": "1.0.0",
-  "description": "Editor for NNGEngine",
+  "description": "Editor for VEngine",
   "main": "app.js",
   "scripts": {
     "start": "./node_modules/.bin/electron .",
-    "package-all": "electron-packager . EditorV2 --overwrite --asar --platform=all --arch=all --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
-    "package-win32": "electron-packager . EditorV2 --overwrite --asar --platform=win32 --arch=ia32 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
-    "package-win64": "electron-packager . EditorV2 --overwrite --asar --platform=win32 --arch=x64 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
-    "package-mac": "electron-packager . EditorV2 --overwrite --asar --platform=darwin --arch=x64 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
-    "package-linux": "electron-packager . EditorV2 --overwrite --asar --platform=linux --arch=x64 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic"
+    "package-all": "electron-packager . VEngine --overwrite --asar --platform=all --arch=all --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
+    "package-win32": "electron-packager . VEngine --overwrite --asar --platform=win32 --arch=ia32 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
+    "package-win64": "electron-packager . VEngine --overwrite --asar --platform=win32 --arch=x64 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
+    "package-mac": "electron-packager . VEngine --overwrite --asar --platform=darwin --arch=x64 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic",
+    "package-linux": "electron-packager . VEngine --overwrite --asar --platform=linux --arch=x64 --icon=ResourcesStatic/icons/iconT.ico --prune=true --out=builds --ignore=.bat --ignore=.gitattributes --ignore=.gitignore --ignore=LICENSE --ignore=config.json --ignore=default_layout.json --ignore=.vscode --ignore=Libraries --ignore=Modules --ignore=Plugins --ignore=ResourcesDynamic"
   },
   "author": "wiktortr",
   "license": "GNU",

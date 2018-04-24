@@ -13,8 +13,9 @@
 }
 
 .splash-screen-title > img{
-    width: 220px;
-    height: 220px;
+    width: 200px;
+    height: 200px;
+    margin: 20px;
 }
 
 .splash-screen-loader{
@@ -25,7 +26,7 @@
 .spinner {
     height: 70px;
     width: 70px;
-    animation: rotate 0.8s infinite linear;
+    animation: rotate 0.4s infinite linear;
     border: 5px solid #fff;
     border-right-color: transparent;
     border-radius: 50%;

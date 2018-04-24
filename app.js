@@ -12,7 +12,13 @@ let splashScreen;
 let mainwindow;
 let loaded = false;
 
-let icon_path = path.join(__dirname, "ResourcesStatic", "icons", "iconT.ico");
+let icon_path = path.join(__dirname, "ResourcesStatic", "icons");
+if(process.platform == "win32"){
+    icon_path = path.join(icon_path, "icon.ico");
+}
+else{
+    icon_path = path.join(icon_path, "icon.png");
+}
 
 function close_windows(){
     mainwindow = null;
