@@ -24,7 +24,6 @@ module.exports = class{
     Load(editor){
         try {
             editor.project = JSON.parse(fs.readFileSync(editor.filename));
-            //CallFunctionFromModules("loadCallback");
         } catch (error) {
             console.log("Error While Load Project");
             console.log(error);
@@ -45,8 +44,6 @@ module.exports = class{
         console.log(editor);
         try {
             fs.writeFileSync(editor.filename, JSON.stringify(template_project));
-            console.log(editor.filename);
-            alert("OK");
         } catch (error) {
             console.log("Error While Create Project");
             console.log(error);

@@ -15,6 +15,7 @@ module.exports = class{
         this.importCallback = null;
         this.createCallback = null;
         this.exitCallback = null;
+        this.selectCallback = null;
     }
 
     //For type display

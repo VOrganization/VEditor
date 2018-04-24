@@ -75,3 +75,7 @@
     letter-spacing: 1px;
     padding: 3px;
 }
+
+.context_asset_item_selected{
+    background-color: var(--interactive-color);
+}

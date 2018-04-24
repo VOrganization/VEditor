@@ -53,7 +53,7 @@ const path = require("path");
             editor.modulesUsage[i].setContainer($("." + editor.modulesUsage[i].containerName).eq(counter));
         }
     }
-    
+
     for (let i = 0; i < editor.modules.length; i++) {
         if(editor.modules[i].type == "calculation"){
             editor.modulesUsage.push(new editor.modules[i].class);
@@ -88,7 +88,7 @@ WebContext.openDevTools(); //tymczasowo
                             filters: [
                                 {
                                     name: "Project File",
-                                    extensions: [ "nngp" ]
+                                    extensions: [ project_ext ]
                                 }
                             ]
                         }, function(file){
@@ -116,7 +116,7 @@ WebContext.openDevTools(); //tymczasowo
                             filters: [
                                 {
                                     name: "Project File",
-                                    extensions: [ "nngp" ]
+                                    extensions: [ project_ext ]
                                 }
                             ]
                         }, function(file){
