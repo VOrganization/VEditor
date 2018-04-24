@@ -14,10 +14,10 @@ let loaded = false;
 
 let icon_path = path.join(__dirname, "ResourcesStatic", "icons");
 if(process.platform == "win32"){
-    icon_path = path.join(icon_path, "icon.ico");
+    icon_path = path.join(icon_path, "iconRound.ico");
 }
 else{
-    icon_path = path.join(icon_path, "icon.png");
+    icon_path = path.join(icon_path, "iconRound.png");
 }
 
 function close_windows(){

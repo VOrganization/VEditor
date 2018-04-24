@@ -268,6 +268,9 @@ WebContext.openDevTools(); //tymczasowo
 
     let sm = 3;
     for (let i = 0; i < editor.modules.length; i++) {
+        if(editor.modules[i].type != "display"){
+            continue;
+        }
         let n = editor.modules[i].name;
         menu_context[sm].submenu.push({
             label: n.replace("_", " "),
