@@ -36,12 +36,66 @@ module.exports = class{
         return path_dir;
     }
     
+    _scan_dir(editor, p, pp){
+        let t = this;
+        try {
+            fs.readdir(p, function(err, files){
+                if(err !== null){
+                    console.log("Error while scaning dirs SEC");
+                    console.log(err);
+                }
+                else{
+                    for (let i = 0; i < files.length; i++) {
+                        let glob;
+                        if(pp == undefined){
+                            glob = path.join(editor.dirname, files[i]);
+                        }
+                        else{
+                            glob = path.join(pp, files[i]);
+                        }
+
+                        if(fs.lstatSync(glob).isDirectory()){
+                            t._scan_dir(editor, glob, glob);
+                        }
+                        else{
+                            let found = false;
+                            let main_p = path.relative(editor.dirname, glob);
+                            let ext = path.extname(main_p);
+                            let name = path.basename(main_p, ext);
+                            for (let j = 0; j < editor.project.files.length; j++) {
+                                if(!fs.existsSync(path.join(editor.dirname, editor.project.files[j].path))){
+                                    editor.project.files.splice(j, 1);
+                                }
+                                if(editor.project.files[j].path == main_p){
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if(!found){
+                                editor.project.files.push({
+                                    type: null,
+                                    name: name,
+                                    ext: ext,
+                                    path: main_p,
+                                    data: null
+                                });
+                            }
+                        }
+                    }
+                }
+            });   
+        } catch (error) {
+            console.log("Error while scaning dirs");
+            console.log(error);
+        }
+    }
+
     scanDir(editor){
         console.log("scan dir");
+        this._scan_dir(editor, editor.dirname);
     }
 
     createWatcher(editor){
-        console.log("Create Watcher");
         if(this.watcher !== null){
             this.watcher.close();
         }
@@ -59,10 +113,7 @@ module.exports = class{
     }
 
     addElements(editor){
-        console.log("Add Elements");
         this.container.children(".context_asset_data").html("");
-        
-        console.log(this.calcPath());
 
         let list = new Array();
         try {
@@ -75,6 +126,10 @@ module.exports = class{
         for (let i = 0; i < list.length; i++) {
             let p = path.join(editor.dirname, list[i]);
             
+            if(p == editor.filename){
+                continue;
+            }
+
             let icon = `<span class="icon-folder"></span>`;
             if(!fs.lstatSync(p).isDirectory()){
                 icon = `<span class="icon-doc-inv"></span>`;
@@ -95,7 +150,6 @@ module.exports = class{
             let p = $(this).attr("id");
             if(fs.lstatSync(p).isDirectory()){
                 $(cont).children(".context_asset_header").append(`<span class="context_asset_header_btn">` + path.basename(p) + `</span><span class="icon-right-open"></span>`);
-                console.log(p);
                 c.Update(editor);
             }
             else{
@@ -107,20 +161,24 @@ module.exports = class{
         });
 
         $(this.container).children(".context_asset_header").children(".context_asset_header_btn").click(function(){
-            
+            let p = $(this).html();
+            if(p == "asset"){
+                $(cont).children(".context_asset_header").html(`<span class="context_asset_header_btn">asset</span><span class="icon-right-open"></span>`);
+                c.Update(editor);
+            }
         });
 
     }
 
     UpdateContext(editor, c){
-        console.log("update asset context");
         c.addElements(editor);
+        c.scanDir(editor);
     }
 
     Update(editor){
-        console.log("update asset");
         this.createWatcher(editor);
         this.addElements(editor);
+        this.scanDir(editor);
     }
 
     SelectUpdate(editor){
