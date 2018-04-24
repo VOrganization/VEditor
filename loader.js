@@ -78,9 +78,17 @@
 
         if(ext == ".js" && lp.indexOf(".node.js") != -1){
             try {
+                let mod = require("./" + lp);
+                let tmp = new mod();
+                let priority = tmp.priority;
+                if(priority === null || priority == undefined){
+                    priority = 0;
+                }
                 editor.modules.push({
-                    class: require("./" + lp),
-                    name: path.basename(lp, ".node.js")
+                    class: mod,
+                    name: tmp.name,
+                    type: tmp.type,
+                    priority: priority
                 });
                 out.state = 0;
             } catch (error) {

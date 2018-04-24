@@ -28,7 +28,7 @@ module.exports = class{
         this.createCallback = null;
         this.exportCallback = null;
         this.importCallback = null;
-        this.exitCallback = this.Update;
+        this.exitCallback = null;
 
     }
 

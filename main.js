@@ -10,14 +10,6 @@ const WebContext = remote.getCurrentWebContents();
 const fs = require("fs");
 const path = require("path");
 
-function CallFunctionFromModules(fun){
-    for (let i = 0; i < editor.modulesUsage.length; i++) {
-        if(editor.modulesUsage[i][fun] !== null && editor.modulesUsage[i][fun] !== undefined){
-            editor.modulesUsage[i][fun](editor);
-        }
-    }
-}
-
 // Init Layout
 {
     editor.layout = new GoldenLayout(editor.defaultLayout);
@@ -61,7 +53,25 @@ function CallFunctionFromModules(fun){
             editor.modulesUsage[i].setContainer($("." + editor.modulesUsage[i].containerName).eq(counter));
         }
     }
+    
+    for (let i = 0; i < editor.modules.length; i++) {
+        if(editor.modules[i].type == "calculation"){
+            editor.modulesUsage.push(new editor.modules[i].class);
+        }
+    }
+    
+    editor.modulesUsage.sort(function(a,b){
+        if(a.priority > b.priority){
+            return -1;
+        }
+        else{
+            return 1;
+        }
+        return 0;
+    });
 }
+
+WebContext.openDevTools(); //tymczasowo
 
 // Init Electron Window
 {
@@ -83,8 +93,8 @@ function CallFunctionFromModules(fun){
                             ]
                         }, function(file){
                             if(file !== undefined){
-                                editor.filename = file[0];
-                                editor.dirname = path.dirname(file[0]);
+                                editor.filename = String(file);
+                                editor.dirname = path.dirname(editor.filename);
                                 CallFunctionFromModules("loadCallback");
                             }
                         });
@@ -109,10 +119,10 @@ function CallFunctionFromModules(fun){
                                     extensions: [ "nngp" ]
                                 }
                             ]
-                        }, function(files){
+                        }, function(file){
                             if(file !== undefined){
-                                editor.filename = file[0];
-                                editor.dirname = path.dirname(file[0]);
+                                editor.filename = String(file);
+                                editor.dirname = path.dirname(editor.filename);
                                 CallFunctionFromModules("createCallback");
                             }
                         });
@@ -140,7 +150,9 @@ function CallFunctionFromModules(fun){
                 {
                     label: "Save",
                     accelerator: 'Ctrl+S',
-                    click(){ save_data(); }
+                    click(){
+                        CallFunctionFromModules("saveCallback");
+                    }
                 },
                 
             ]
@@ -276,4 +288,11 @@ function CallFunctionFromModules(fun){
 
     Window.setMenu(Menu.buildFromTemplate(menu_context));
 
+}
+
+//On Close
+{
+    Window.on("close", function(){
+        CallFunctionFromModules("exitCallback");
+    });
 }

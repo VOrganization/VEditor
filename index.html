@@ -14,7 +14,15 @@
             layout: null,
             filename: null,
             dirname: null,
+            project: null,
         };
+        function CallFunctionFromModules(fun){
+            for (let i = 0; i < editor.modulesUsage.length; i++) {
+                if(editor.modulesUsage[i][fun] !== null && editor.modulesUsage[i][fun] !== undefined){
+                    editor.modulesUsage[i][fun](editor);
+                }
+            }
+        }
         </script>
 
     </head>
