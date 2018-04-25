@@ -4,6 +4,7 @@ const watch = require("watchjs").watch;
 const project_ext = "vproj";
 
 let editor = {
+    THREE: THREE,
     modules: new Array(),
     modulesUsage: new Array(),
     defaultLayout: null,

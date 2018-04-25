@@ -13,7 +13,7 @@ module.exports = class{
     constructor(){
         this.type = "calculation";
         this.name = "project";
-        this.priority = 100;
+        this.priority = 1000;
 
         this.saveCallback = this.Save;
         this.loadCallback = this.Load;

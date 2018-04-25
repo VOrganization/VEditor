@@ -47,10 +47,10 @@ const path = require("path");
         }
         if(counter == 0){
             usage.push(editor.modulesUsage[i].name);
-            editor.modulesUsage[i].setContainer($("." + editor.modulesUsage[i].containerName));
+            editor.modulesUsage[i].setContainer($("." + editor.modulesUsage[i].containerName), editor);
         }
         else{
-            editor.modulesUsage[i].setContainer($("." + editor.modulesUsage[i].containerName).eq(counter));
+            editor.modulesUsage[i].setContainer($("." + editor.modulesUsage[i].containerName).eq(counter), editor);
         }
     }
 
