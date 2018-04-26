@@ -33,7 +33,10 @@ module.exports = class{
     Save(editor){
         try {
             editor.project.layout = editor.layout.toConfig();
+            let tmp_data = editor.project.data.scene.data;
+            editor.project.data.scene.data = null;
             fs.writeFileSync(editor.filename, JSON.stringify(editor.project));
+            editor.project.data.scene.data = tmp_data;
         } catch (error) {
             console.log("Error While Save Project");
             console.log(error);

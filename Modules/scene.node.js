@@ -9,16 +9,8 @@ const WebContext = remote.getCurrentWebContents();
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
-function BPush(f,s){
-    return Buffer.concat([f, s]);
-}
-
-function BUint32(n){
-    let b = new Buffer(4);
-    b.writeUInt32LE(n, 0);
-    return b;
-}
 
 module.exports = class{
     constructor(){
@@ -46,30 +38,9 @@ module.exports = class{
         
     }
 
-    export(p, editor, full){
-        let d = new Buffer(0);
-
-        //header
-        d = BPush(d, new Buffer("S1.0.0S"));
-
-        //file section
-        d = BPush(d, BUint32(editor.project.files.length));
-        for (let i = 0; i < editor.project.files.length; i++) {
-            let f = editor.project.files[i];
-            
-        }
-
-        try {
-            fs.writeFileSync(p, d);
-        } catch (error) {
-            console.log("Error While Exporting Scene");
-            console.log(error);
-        }
-    }
-
     initData(editor){
         if(editor.project.data.scene !== undefined && editor.project.data.scene !== null){
-            this.export(path.join(editor.dirname, editor.project.data.scene.file), editor, false);
+            
         }
         else{
             let t = this;
@@ -93,12 +64,13 @@ module.exports = class{
                     }, function(file){
                         if(file !== undefined){
                             let p = String(file);
+                            console.log(THREE);
                             editor.project.data.scene = {
                                 file: path.relative(editor.dirname, p),
-                                three: new THREE.Scene(),
+                                data: new THREE.Scene(),
                                 settings: null,
                             }
-                            t.export(p, editor, false);
+                            CallFunctionFromModules("exportCallback", t);
                         }
                     });
                 }

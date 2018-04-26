@@ -12,7 +12,11 @@ let editor = {
     filename: null,
     dirname: null,
     project: null,
-    selected: null
+    selected: null,
+    export: {
+        full: false,
+        type: null
+    }
 };
 
 function CallFunctionFromModules(fun, c){
