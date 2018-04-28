@@ -18,21 +18,29 @@ module.exports = class{
         this.name = "export";
         this.priority = 10;
 
-        this.exportCallback = this.export;
-        this.saveCallback = this.export;
+        this.exportCallback = this.exportCB;
+        this.saveCallback = this.saveCB;
     }
 
-    export(editor){
+    saveCB(editor){
+        this.export(editor, false);
+    }
+
+    exportCB(editor){
+        this.export(editor, true);
+    }
+
+    export(editor, full){
         if(editor.project.data.scene === undefined || editor.project.data.scene === null){
             return;
         }
 
-        let full = editor.export.full;
         let d = new Buffer(0);
 
         //header
         d = BPush(d, new Buffer("S1.0.0S"));
-         //file section
+        
+        //file section
          let f_size = editor.project.files.length;
          for (let i = 0; i < editor.project.files.length; i++) {
              let f = editor.project.files[i];

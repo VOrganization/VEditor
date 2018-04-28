@@ -31,7 +31,7 @@ module.exports = class{
         this.renderer = null;
         this.camera = null;
         this.scene = null;
-        this.rotation = null;
+        this.rotation = { x: 45, y: 45, z: 0 };
     }
 
     destroy() {
@@ -40,7 +40,7 @@ module.exports = class{
 
     initData(editor){
         if(editor.project.data.scene !== undefined && editor.project.data.scene !== null){
-            
+            this.scene = editor.project.data.scene.data;
         }
         else{
             let t = this;
@@ -79,33 +79,93 @@ module.exports = class{
     }
 
     initScene(){
+        let t = this;
+        
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(100, 100);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         $(this.container).append(this.renderer.domElement);
-
+        
         this.camera = new THREE.PerspectiveCamera( 75, 1, 0.1, 10000 );
         this.camera.position.z = 5;
-        let camera = this.camera;
-
+        
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x222222);
-        let scene = this.scene;
+        
+        let grid = new THREE.GridHelper(1000, 1000, 0xffffff, 0x888888);
+        let ambient = new THREE.AmbientLight(0x444444);
+        let dir = new THREE.DirectionalLight(0xffffff, 0.2);
 
-        let renderer = this.renderer;
         let renderFunction = function(){
             requestAnimationFrame(renderFunction);
-			renderer.render(scene, camera);
+            
+            t.scene.rotation.x = t.rotation.x;
+            t.scene.rotation.y = t.rotation.y;
+            t.scene.rotation.z = t.rotation.z;
+
+            let found = false;
+            for (let i = 0; i < t.scene.children.length; i++) {
+                if(t.scene.children[i] == grid || t.scene.children[i] == ambient || t.scene.children[i] == dir){
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                t.scene.add(grid);
+                t.scene.add(ambient);
+                t.scene.add(dir);
+            }
+
+			t.renderer.render(t.scene, t.camera);
         }
         renderFunction();
 
-
-        let context = this.container;
         $(this.container).resize(function(){
-            camera.aspect = (context.width() / context.height());
-            camera.updateProjectionMatrix();
-            renderer.setSize( context.width(), context.height() );
+            t.camera.aspect = (t.container.width() / t.container.height());
+            t.camera.updateProjectionMatrix();
+            t.renderer.setSize( t.container.width(), t.container.height() );
+        });
+
+        let startX = 0;
+        let startY = 0;
+        let startMouseX = 0;
+        let startMouseY = 0;
+        let keyPress = -1;
+        $(this.container).bind("mousedown", function(e){
+            keyPress = e.button;
+            startMouseX = e.pageX;
+            startMouseY = e.pageY;
+            if(keyPress == 1){
+                startX = t.rotation.x;
+                startY = t.rotation.y;
+            }
+        });
+
+        $(this.container).bind("mousemove", function(e){
+            if(keyPress == 1){
+                t.rotation.y = startY + ((e.pageX - startMouseX)*0.5) * Math.PI / 180;
+                t.rotation.x = startX + ((e.pageY - startMouseY)*0.5) * Math.PI / 180;
+            }
+        });
+
+        $(this.container).bind("mouseup", function(e){
+            keyPress = -1;
+        });
+
+        $(this.container).bind("mousewheel", function(e) {
+            if(e.ctrlKey){
+                t.camera.position.x += e.deltaY * 0.5;
+            }
+            else if(e.shiftKey){
+                t.camera.position.y += e.deltaY * 0.5;
+            }
+            else{
+                t.camera.position.z -= e.deltaY * 0.5;
+                if(t.camera.position.z <= 0){
+                    t.camera.position.z = 0.01;
+                }
+            }
         });
     }
 
