@@ -276,8 +276,17 @@ module.exports = class{
         }
     }
 
+    initModel(){
+        
+    }
+
+    init(){
+        this.initModel();
+    }
+
     setContainer(jqueryObject){
         this.container = jqueryObject;
         $(this.container).children(".context_settings_div").hide();
+        this.init();
     }
 }

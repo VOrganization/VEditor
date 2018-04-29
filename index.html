@@ -4,9 +4,27 @@
         <title>VEngine</title>
         <meta charset="UTF-8">
 
+        <script type="text/javascript">window.$ = window.jQuery = require('jquery');</script>
         <script type="text/javascript" src="Libraries/three.min.js"></script>
-        <script src="head.js"></script>
+        <script type="text/javascript">
+        let editor = {
+            THREE: null,
+            modules: new Array(),
+            modulesUsage: new Array(),
+            defaultLayout: null,
+            layout: null,
+            filename: null,
+            dirname: null,
+            project: null,
+            selected: null,
+            export: {
+                full: false,
+                type: null
+            }
+        };
+        </script>
 
+        <script src="head.js"></script>
     </head>
 
     <body>

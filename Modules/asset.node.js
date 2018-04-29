@@ -42,7 +42,7 @@ module.exports = class{
             return "image";
         }
 
-        if(e == ".3ds" || e == ".blend" || e == ".dae" || e == ".fbx" || e == ".gltf" || e == ".obj" || e == ".ply" || e == ".stl"){
+        if(e == ".bvh" || e == ".blend" || e == ".dae" || e == ".fbx" || e == ".gltf" || e == ".obj" || e == ".ply" || e == ".stl"){
             return "model";
         }
         

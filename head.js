@@ -1,23 +1,6 @@
-window.$ = window.jQuery = require('jquery');
 const watch = require("watchjs").watch;
 
 const project_ext = "vproj";
-
-let editor = {
-    THREE: THREE,
-    modules: new Array(),
-    modulesUsage: new Array(),
-    defaultLayout: null,
-    layout: null,
-    filename: null,
-    dirname: null,
-    project: null,
-    selected: null,
-    export: {
-        full: false,
-        type: null
-    }
-};
 
 function CallFunctionFromModules(fun, c){
     for (let i = 0; i < editor.modulesUsage.length; i++) {
@@ -33,3 +16,4 @@ function CallFunctionFromModules(fun, c){
 watch(editor, "selected", function(){
     CallFunctionFromModules("selectCallback");
 });
+
