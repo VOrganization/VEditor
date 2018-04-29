@@ -51,3 +51,8 @@ function LoadModel(p, fun){
         }
     }
 }
+
+// Testing
+// LoadModel("C:\\Users\\wiktortr\\Desktop\\tmp_nngp\\mountains.fbx", function(d){
+//     console.log(d);
+// });

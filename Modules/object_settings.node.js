@@ -276,17 +276,21 @@ module.exports = class{
         }
     }
 
-    initModel(){
-        
+    initModel(editor){
+        $(this.container).children(".model_settings").children(".model_add_to_scene").click(function(){
+            if(editor.selected.type == "file"){
+                
+            }
+        });
     }
 
-    init(){
-        this.initModel();
+    init(editor){
+        this.initModel(editor);
     }
 
-    setContainer(jqueryObject){
+    setContainer(jqueryObject, editor){
         this.container = jqueryObject;
         $(this.container).children(".context_settings_div").hide();
-        this.init();
+        this.init(editor);
     }
 }
