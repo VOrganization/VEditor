@@ -16,3 +16,6 @@ clear.bat
 
 # Test project
 test
+
+# Google Drive
+.tmp.drivedownload
