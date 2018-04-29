@@ -36,6 +36,35 @@ module.exports = class{
         return path_dir;
     }
     
+    findFileType(ext){
+        let e = String(ext).toLocaleLowerCase();
+        if(e == ".jpg" || e == ".tiff" || e == ".gif" || e == ".bmp" || e == ".png" || e == ".webp"){
+            return "image";
+        }
+
+        if(e == ".3ds" || e == ".blend" || e == ".dae" || e == ".fbx" || e == ".gltf" || e == ".obj" || e == ".ply" || e == ".stl"){
+            return "model";
+        }
+        
+        if(e == ".vscene"){
+            return "scene";
+        }
+
+        if(e == ".vshader" || e == ".shader" || e == ".glsl" || e == ".hlsl"){
+            return "shader";
+        }
+
+        if(e == ".vmat" || e == ".mat"){
+            return "material";
+        }
+
+        if(e == ".vmesh"){
+            return "mesh";
+        }
+
+        return "undefined";
+    }
+
     _scan_dir(editor, p, pp){
         let t = this;
         try {
@@ -62,6 +91,7 @@ module.exports = class{
                             let main_p = path.relative(editor.dirname, glob);
                             let ext = path.extname(main_p);
                             let name = path.basename(main_p, ext);
+                            let type = t.findFileType(ext);
                             for (let j = 0; j < editor.project.files.length; j++) {
                                 if(!fs.existsSync(path.join(editor.dirname, editor.project.files[j].path))){
                                     editor.project.files.splice(j, 1);
@@ -70,10 +100,13 @@ module.exports = class{
                                     found = true;
                                     break;
                                 }
+                                if(editor.project.files[j].type === "" || editor.project.files[j].type === null){
+                                    editor.project.files[j].type = t.findFileType(editor.project.files[j].ext);
+                                }
                             }
                             if(!found){
                                 editor.project.files.push({
-                                    type: null,
+                                    type: type,
                                     name: name,
                                     ext: ext,
                                     path: main_p,

@@ -109,7 +109,7 @@
             }
             else{
                 ipc.send("load_msg", loadRes(pp));
-                sleep(10);
+                sleep(5);
             }
         }
         for (let i = 0; i < dirs.length; i++) {

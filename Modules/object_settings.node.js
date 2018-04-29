@@ -1,4 +1,7 @@
+const path = require("path");
+
 module.exports = class{
+
     constructor(){
         this.type = "display";
         this.name = "object_settings";
@@ -219,6 +222,7 @@ module.exports = class{
         this.exportCallback = null;
         this.importCallback = null;
         this.exitCallback = null;
+        this.selectCallback = this.update;
 
         this.container = null;
     }
@@ -227,9 +231,53 @@ module.exports = class{
         
     }
 
+    update(editor){
+        if(editor.selected.type == "file"){
+            let f = null;
+            for (let i = 0; i < editor.project.files.length; i++) {
+                if(editor.project.files[i].path == path.relative(editor.dirname, editor.selected.filename)){
+                   f = editor.project.files[i];
+                   break;
+                }
+            }
+            if(f == null){
+                $(this.container).children(".context_settings_header").children(".context_settings_header_icon").children("img").attr("src", "");
+                $(this.container).children(".context_settings_header").children(".context_settings_header_data").children(".context_settings_header_name").html("Not selected object");    
+                console.log("Error File dosen't exist");
+                console.log(editor.selected.filename);
+                return;
+            }
+
+            $(this.container).children(".context_settings_header").children(".context_settings_header_icon").children("img").attr("src", "ResourcesStatic/img/" + f.type + ".png");
+            $(this.container).children(".context_settings_header").children(".context_settings_header_data").children(".context_settings_header_name").html(f.name);
+
+            switch (f.type) {
+                case "model":{
+                    $(this.container).children(".model_settings").show();
+                    $(this.container).children(".model_settings").children(".model_optimize_mesh").val(0);
+                    $(this.container).children(".model_settings").children(".model_auto_uv").val(0);
+                    $(this.container).children(".model_settings").children(".model_auto_normal").val(0);
+                    $(this.container).children(".model_settings").children(".model_smooth_normal").val(0);
+                    $(this.container).children(".model_settings").children(".model_inport_material").val(0);
+                    break;
+                }
+            
+                default:
+                    break;
+            }
+
+        }
+        else if(editor.selected.type == "object"){
+
+        }
+        else{
+            $(this.container).children(".context_settings_header").children(".context_settings_header_icon").children("img").attr("src", "");
+            $(this.container).children(".context_settings_header").children(".context_settings_header_data").children(".context_settings_header_name").html("Not selected object");
+        }
+    }
+
     setContainer(jqueryObject){
         this.container = jqueryObject;
-
-        //$(this.container).html("Hello World");
+        $(this.container).children(".context_settings_div").hide();
     }
 }

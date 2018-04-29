@@ -16,8 +16,6 @@ module.exports = class{
             return;
         }
 
-        alert("OK");
-
         editor.project.data.scene.data = this.import(path.join(editor.dirname, editor.project.data.scene.file));
     }
 
@@ -27,6 +25,26 @@ module.exports = class{
 
     import(pp){
         let scene =  new THREE.Scene();
+        let data = null;
+        try {
+            data = fs.readFileSync(pp);
+        } catch (error) {
+            console.log("Error While Importing File");
+            console.log(error);
+            return scene;
+        }
+        data = new Buffer(data);
+        console.log(data);
+
+        //header
+        console.log(data.readUInt8(0));
+        console.log(data.readUInt8(6));
+        if(data.readUInt8(0) != 83 || data.readUInt8(6) != 83){
+            console.log("Error: Incorrect header");
+            return scene;
+        }
+
+        
 
         return scene;
     }
