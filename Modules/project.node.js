@@ -35,7 +35,18 @@ module.exports = class{
             editor.project.layout = editor.layout.toConfig();
             let tmp_data = editor.project.data.scene.data;
             editor.project.data.scene.data = null;
+
+            let files_tmp = new Array();
+            for (let i = 0; i < editor.project.files.length; i++) {
+                files_tmp.push(editor.project.files[i].data);
+                editor.project.files[i].data = null;
+            }
+
             fs.writeFileSync(editor.filename, JSON.stringify(editor.project));
+            
+            for (let i = 0; i < editor.project.files.length; i++) {
+                editor.project.files[i].data = files_tmp[i];
+            }
             editor.project.data.scene.data = tmp_data;
         } catch (error) {
             console.log("Error While Save Project");

@@ -121,7 +121,6 @@ module.exports = class{
             console.log("Error While Exporting Scene");
             console.log(error);
         }
-        alert("OK");
     }
 
 }

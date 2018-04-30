@@ -4,6 +4,7 @@ const path = require("path");
 window.$ = window.jQuery = require('jquery');
 
 module.exports = class{
+
     constructor(){
         this.type = "display";
         this.name = "asset";
@@ -186,9 +187,18 @@ module.exports = class{
                 c.Update(editor);
             }
             else{
+                // let pp = path.relative(editor.dirname, p);
+                // let f = null;
+                // for (let i = 0; i < editor.project.files.length; i++) {
+                //     if(editor.project.files[i].path == pp){
+                //         f = editor.project.files[i];
+                //         break;
+                //     }
+                // }
                 editor.selected = {
                     type: "file",
-                    filename: p
+                    filename: p,
+                    //file: f
                 }
             }
         });

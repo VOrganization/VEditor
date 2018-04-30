@@ -52,7 +52,10 @@ function LoadModel(p, fun){
     }
 }
 
-// Testing
-// LoadModel("C:\\Users\\wiktortr\\Desktop\\tmp_nngp\\mountains.fbx", function(d){
-//     console.log(d);
-// });
+LoadModel("C:\\Users\\wiktortr\\Desktop\\tmp_nngp\\cube.obj", function(d){
+    console.log(d);
+});
+
+LoadModel("C:\\Users\\wiktortr\\Desktop\\tmp_nngp\\untitled.fbx", function(d){
+    console.log(d);
+});
