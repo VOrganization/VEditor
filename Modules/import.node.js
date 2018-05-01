@@ -65,6 +65,7 @@ module.exports = class{
 
     import(pp, editor){
         let scene =  new THREE.Scene();
+        scene.background = new THREE.Color(0x222222);
         let d = null;
         let i = [0];
         try {
@@ -314,6 +315,7 @@ module.exports = class{
                 }
             }
 
+            CallFunctionFromModules("changeDataCallback");
         }
 
         return scene;

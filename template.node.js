@@ -16,6 +16,7 @@ module.exports = class{
         this.createCallback = null;
         this.exitCallback = null;
         this.selectCallback = null;
+        this.changeDataCallback = null;
     }
 
     //For type display
@@ -29,7 +30,7 @@ module.exports = class{
     }
 
     //For type display
-    setContainer(jqueryObject, LayoutObject){
+    setContainer(jqueryObject, editor){
 
     }
 

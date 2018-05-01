@@ -15,8 +15,7 @@ module.exports = class{
         </div>
         `;
 
-        this.loadCallback = this.update;
-        // this.importCallback = this.update;
+        this.changeDataCallback = this.update;
 
         this.container = null;
         this.watcher = null;
@@ -60,24 +59,18 @@ module.exports = class{
         }
 
         let scene = editor.project.scene.data;
-        let t = this;
-
-        watchjs.watch(scene, "children", function(e){
-            if(e != "matrixWorldNeedsUpdate"){
-                $(t.container).children(".context").html("");
-                t.id = 0;
-                for (let i = 0; i < scene.children.length; i++) {
-                    if(scene.children[i].type == "LineSegments" || scene.children[i].type == "AmbientLight"){
-                        continue;
-                    }
-                    t.showObj(scene.children[i], $(t.container).children(".context"));
-                }
+        
+        $(this.container).children(".context").html("");
+        this.id = 0;
+        for (let i = 0; i < scene.children.length; i++) {
+            if(scene.children[i].type == "LineSegments" || scene.children[i].type == "AmbientLight"){
+                continue;
             }
-        });
+            this.showObj(scene.children[i], $( this.container).children(".context"));
+        }
     }
 
     setContainer(jqueryObject, editor){
         this.container = jqueryObject;
-        this.update(editor);
     }
 }
