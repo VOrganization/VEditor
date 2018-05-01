@@ -54,35 +54,47 @@ function LoadModel(p, fun){
     }
 }
 
+function syncSetTimeout(func, ms, callback) {
+    (function sync(done) {
+            if (!done) {
+            setTimeout(function() {
+                func();
+                sync(true);
+            }, ms);
+            return;
+        }
+        callback();
+    })();
+}
+
 function LoadModelSync(p){
     const path = require("path");
-    let SN = require("sync-node");
-    let pn = SN.createQueue();
 
     let e = path.extname(p).toLocaleLowerCase();
     let data = undefined;
 
-    pn.pushJob(function(){
-        for (let i = 0; i < modelLoaders.length; i++) {
-            if(modelLoaders[i].ext == e){
-                let l = new modelLoaders[i].loader(new THREE.LoadingManager());
-                l.load(
-                    p,
-                    function(object){
-                        object.name = path.basename(p, path.extname(p));
-                        data = object;
-                    },
-                    function(){
-    
-                    },
-                    function(){
-                        data = null;
-                    }
-                );
-                break;
-            }
+    let l = null;
+    for (let i = 0; i < modelLoaders.length; i++) {
+        if(modelLoaders[i].ext == e){
+            l = new modelLoaders[i].loader(new THREE.LoadingManager());
+            l.load(
+                p,
+                function(object){
+                    object.name = path.basename(p, path.extname(p));
+                    data = object;
+                },
+                function(){
+        
+                },
+                function(){
+                    data = null;
+                }
+            );
+            break;
         }
-    });
+    }
+
+    syncSetTimeout(null, 1000, null);
 
     return data;
 }
