@@ -17,3 +17,31 @@ watch(editor, "selected", function(){
     CallFunctionFromModules("selectCallback");
 });
 
+function findFileType(ext){
+    let e = String(ext).toLocaleLowerCase();
+    if(e == ".jpg" || e == ".tiff" || e == ".gif" || e == ".bmp" || e == ".png" || e == ".webp"){
+        return "image";
+    }
+
+    if(e == ".bvh" || e == ".blend" || e == ".dae" || e == ".fbx" || e == ".gltf" || e == ".obj" || e == ".ply" || e == ".stl"){
+        return "model";
+    }
+    
+    if(e == ".vscene"){
+        return "scene";
+    }
+
+    if(e == ".vshader" || e == ".shader" || e == ".glsl" || e == ".hlsl"){
+        return "shader";
+    }
+
+    if(e == ".vmat" || e == ".mat"){
+        return "material";
+    }
+
+    if(e == ".vmesh"){
+        return "mesh";
+    }
+
+    return "undefined";
+}
