@@ -39,8 +39,8 @@ module.exports = class{
     }
 
     initData(editor){
-        if(editor.project.data.scene !== undefined && editor.project.data.scene !== null){
-            this.scene = editor.project.data.scene.data;
+        if(editor.project.scene.file !== undefined && editor.project.scene.file !== null){
+            this.scene = editor.project.scene.data;
         }
         else{
             let t = this;
@@ -65,7 +65,7 @@ module.exports = class{
                         if(file !== undefined){
                             let p = String(file);
                             console.log(THREE);
-                            editor.project.data.scene = {
+                            editor.project.scene = {
                                 file: path.relative(editor.dirname, p),
                                 data: new THREE.Scene(),
                                 settings: null,

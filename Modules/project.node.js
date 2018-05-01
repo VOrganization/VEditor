@@ -7,7 +7,7 @@ const template_project = {
     textures: [],
     shaders: [],
     materials: [],
-    data: {},
+    scene: {},
     components: [],
     layout: {},
 }
@@ -38,8 +38,14 @@ module.exports = class{
     Save(editor){
         try {
             editor.project.layout = editor.layout.toConfig();
-            let tmp_data = editor.project.data.scene.data;
-            editor.project.data.scene.data = null;
+            let tmp_data = editor.project.scene.data;
+            editor.project.scene.data = null;
+
+            let tmp_models = editor.project.models;
+            editor.project.models = [];
+
+            let tmp_meshes = editor.project.meshes;
+            editor.project.meshes = [];
 
             let files_tmp = new Array();
             for (let i = 0; i < editor.project.files.length; i++) {
@@ -52,7 +58,13 @@ module.exports = class{
             for (let i = 0; i < editor.project.files.length; i++) {
                 editor.project.files[i].data = files_tmp[i];
             }
-            editor.project.data.scene.data = tmp_data;
+            
+            editor.project.scene.data = tmp_data;
+
+            editor.project.models = tmp_models;
+
+            editor.project.meshes = tmp_meshes;
+
         } catch (error) {
             console.log("Error While Save Project");
             console.log(error);

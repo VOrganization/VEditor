@@ -50,10 +50,10 @@ module.exports = class{
     }
 
     export(editor, full){
-        if(editor.project.data.scene === undefined || editor.project.data.scene === null){
+        if(editor.project.scene.file === undefined || editor.project.scene.file === null){
             return;
         }
-        let s = editor.project.data.scene;
+        let s = editor.project.scene;
 
         let d = new Buffer(0);
 
@@ -178,9 +178,8 @@ module.exports = class{
                     
                         //mesh
                         d = BPush(d, BString2("O"));
-                        let g = new THREE.Geometry().fromBufferGeometry(obj.geometry);
                         d = BPush(d, BUint8(1));
-                        d = BPush(d, BString2(crypto.createHash("md5").update(String(obj.name) + String(g.faces.length)).digest("hex")));
+                        d = BPush(d, BString2(obj.geometry.EID));
 
                         //material
                         if(obj.material !== null){
@@ -212,7 +211,7 @@ module.exports = class{
         }
  
         try {
-            fs.writeFileSync(path.join(editor.dirname, editor.project.data.scene.file), d);
+            fs.writeFileSync(path.join(editor.dirname, editor.project.scene.file), d);
         } catch (error) {
             console.log("Error While Exporting Scene");
             console.log(error);

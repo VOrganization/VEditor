@@ -279,33 +279,18 @@ module.exports = class{
     initModel(editor){
         $(this.container).children(".model_settings").children(".model_add_to_scene").click(function(){
             if(editor.selected.type == "file"){
-                let f = null;
-                let pp = path.relative(editor.dirname, editor.selected.filename);
-                for (let i = 0; i < editor.project.files.length; i++) {
-                    if(editor.project.files[i].path == pp){
-                        f = editor.project.files[i];
-                        break;
+
+                LoadModel(editor.selected.filename, function(d){
+                    if(d !== null){
+                        editor.project.scene.data.add(d);
+                        
                     }
-                }
-                if(f.data !== null){
-                    if(editor.project.data.scene.data != null){
-                        editor.project.data.scene.data.add(f.data);
+                    else{
+                        console.log("Error while loading model");
+                        console.log(editor.selected.filename);
                     }
-                }
-                else{
-                    LoadModel(editor.selected.filename, function(d){
-                        if(d !== null){
-                            f.data = d;
-                            if(editor.project.data.scene.data != null){
-                                editor.project.data.scene.data.add(d);
-                            }
-                        }
-                        else{
-                            console.log("Error while loading model");
-                            console.log(editor.selected.filename);
-                        }
-                    });
-                }
+                });
+            
             }
         });
     }

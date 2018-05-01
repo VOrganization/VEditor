@@ -32,6 +32,39 @@ let modelLoaders = [
 
 function LoadModel(p, fun){
     const path = require("path");
+
+    let f = null;
+    if(editor.project !== null){
+        for (let i = 0; i < editor.project.files.length; i++) {
+            if(editor.project.files[i].path == path.relative(editor.dirname, p)){
+                f = editor.project.files[i];
+                console.log(f);
+                if(f.data !== null && f.data !== undefined){
+                    console.log("Loaded");
+                    fun(f.data);
+                    return;
+                }
+                break;
+            }
+        }
+    }
+
+    let calc_geo = function(obj){
+        if(obj.geometry !== undefined){
+            obj.geometry.name = obj.name;
+            let g = new THREE.Geometry().fromBufferGeometry(obj.geometry);
+            obj.geometry["EID"] = require("crypto").createHash("md5").update(String(obj.name) + String(g.faces.length)).digest("hex");
+            if(editor.project !== null){
+                editor.project.meshes.push(obj.geometry);
+            }
+            console.log("Calc Geo");
+            console.log(obj);
+        }
+        for (let i = 0; i < obj.children.length; i++) {
+            calc_geo(obj.children[i]);
+        }
+    }
+
     let e = path.extname(p).toLocaleLowerCase();
     for (let i = 0; i < modelLoaders.length; i++) {
         if(modelLoaders[i].ext == e){
@@ -40,6 +73,13 @@ function LoadModel(p, fun){
                 p,
                 function(object){
                     object.name = path.basename(p, path.extname(p));
+                    calc_geo(object);
+                    if(f !== null){
+                        f.data = object;
+                    }
+                    if(editor.project !== null){
+                        editor.project.models.push(object);
+                    }
                     fun(object);
                 },
                 function(){

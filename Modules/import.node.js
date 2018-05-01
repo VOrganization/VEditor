@@ -52,11 +52,11 @@ module.exports = class{
     }
 
     loadCB(editor){
-        if(editor.project.data.scene == null || editor.project.data.scene == undefined){
+        if(editor.project.scene.file == null || editor.project.scene.file == undefined){
             return;
         }
 
-        editor.project.data.scene.data = this.import(path.join(editor.dirname, editor.project.data.scene.file), editor);
+        editor.project.scene.data = this.import(path.join(editor.dirname, editor.project.scene.file), editor);
     }
 
     importCB(editor){
@@ -77,7 +77,7 @@ module.exports = class{
         d = new Buffer(d);
         console.log(d);
 
-        let defaultMaterial = new MeshPhongMaterial();
+        let defaultMaterial = new THREE.MeshPhongMaterial();
 
         //header
         let header = BReadString2(d, i, 7);
@@ -263,6 +263,12 @@ module.exports = class{
                             if(BReadString2(d, i, 1) == "O"){
                                 if(BReadUint8(d, i) == 1){
                                     let hash = BReadString2(d, i, 32);
+                                    for (let j = 0; j < editor.project.meshes.length; j++) {
+                                        if(hash == editor.project.meshes[j].EID){
+                                            o.geometry = editor.project.meshes[j];
+                                            break;
+                                        }
+                                    }
                                 }
                                 else{
                                     //inside
@@ -273,6 +279,17 @@ module.exports = class{
                             if(BReadString2(d, i, 1) == "O"){
                                 if(BReadUint8(d, i) == 1){
                                     let hash = BReadString2(d, i, 32);
+                                    let found = false;
+                                    for (let j = 0; j < editor.project.materials.length; j++) {
+                                        if(hash == editor.project.materials[j].EID){
+                                            o.material = editor.project.materials[j];
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                    if(!found){
+                                        o.material = defaultMaterial;
+                                    }
                                 }
                                 else{
                                     //inside
