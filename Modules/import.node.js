@@ -109,8 +109,16 @@ module.exports = class{
 
                 if(inside){
                     context = BReadString(d, i);
-                    if(f === null){
-                        console.log("Add File");
+                    if(f === null && !fs.existsSync(path.join(editor.dirname, name))){
+                        fs.writeFileSync(path.join(editor.dirname, name), context);
+                        f = {
+                            type: findFileType(name),
+                            name: path.basename(name, path.extname(name)),
+                            ext: path.extname(name),
+                            path: name,
+                            data: null
+                        };
+                        editor.project.files.push(f);
                     }
                 }
 
@@ -205,6 +213,25 @@ module.exports = class{
             //Materials
             {
                 let size = BReadUint32(d, i);
+                for (let j = 0; j < size; j++) {
+                    if(BReadUint8(d, i) == 1){
+                        BReadString2(d, i, 32); //get hash for no craching
+                    }
+                    else{
+                        let type = BReadUint32(d, i);
+                        let name = BReadString(d, i);
+                        let hash = BReadString2(d, i, 32);
+
+                        let opacity = BReadFloat(d, i);
+
+                        BReadFloat(d, i)
+                        BReadFloat(d, i)
+                        BReadFloat(d, i)
+                        BReadFloat(d, i)
+
+                        
+                    }
+                }
             }
 
             //Renderers
@@ -229,6 +256,21 @@ module.exports = class{
                             break;
                         }
                     
+                        case 2:{
+                            o = new THREE.PointLight();
+                            break;
+                        }
+
+                        case 3:{
+                            o = new THREE.SpotLight();
+                            break;
+                        }
+
+                        case 4:{
+                            o = new THREE.DirectionalLight();
+                            break;
+                        }
+
                         default:{
                             o = new THREE.Object3D();
                             break;
@@ -300,6 +342,85 @@ module.exports = class{
                             break;
                         }
                     
+                        case 2:{
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            //point light
+                            break;
+                        }
+
+                        case 3:{
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            //spot light
+                            break;
+                        }
+
+                        case 4:{
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            //dir light
+                            break;
+                        }
+
+                        case 5:{
+                            //camera
+                            BReadUint8(d, i);
+                            BReadUint8(d, i);
+                            BReadUint8(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            BReadFloat(d, i);
+                            break;
+                        }
+
                         default:
                             break;
                     }
