@@ -307,7 +307,6 @@ module.exports = class{
                     for (let j = 0; j < ch_size; j++) {
                         o.add(load_obj());
                     }
-                    console.log(o);
                     return o;
                 }
                 for (let j = 0; j < size; j++) {

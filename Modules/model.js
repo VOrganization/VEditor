@@ -38,9 +38,7 @@ function LoadModel(p, fun){
         for (let i = 0; i < editor.project.files.length; i++) {
             if(editor.project.files[i].path == path.relative(editor.dirname, p)){
                 f = editor.project.files[i];
-                console.log(f);
                 if(f.data !== null && f.data !== undefined){
-                    console.log("Loaded");
                     fun(f.data);
                     return;
                 }
@@ -57,8 +55,6 @@ function LoadModel(p, fun){
             if(editor.project !== null){
                 editor.project.meshes.push(obj.geometry);
             }
-            console.log("Calc Geo");
-            console.log(obj);
         }
         for (let i = 0; i < obj.children.length; i++) {
             calc_geo(obj.children[i]);
