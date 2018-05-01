@@ -2,6 +2,11 @@ const fs = require("fs");
 
 const template_project = {
     files: [],
+    models: [],
+    meshes: [],
+    textures: [],
+    shaders: [],
+    materials: [],
     data: {},
     components: [],
     layout: {},

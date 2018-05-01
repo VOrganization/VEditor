@@ -77,6 +77,7 @@ module.exports = class{
         d = new Buffer(d);
         console.log(d);
 
+        let defaultMaterial = new MeshPhongMaterial();
 
         //header
         let header = BReadString2(d, i, 7);
@@ -89,7 +90,7 @@ module.exports = class{
         //Files
         {
             let f_size = BReadUint32(d, i);
-            console.log(f_size);
+            let file_loadings = Array();
             for (let j = 0; j < f_size; j++) {
                 let name = BReadString(d, i);
                 let type = BReadUint32(d, i);
@@ -113,154 +114,190 @@ module.exports = class{
                 }
 
                 if(f !== null && f.data === null){
-                    console.log("Load file data");
                     if(f.type === null){
                         f.type = findFileType(f.ext);
                     }
+
+                    f.data = undefined;
+                    file_loadings.push(f);
+
                     switch (f.type) {
+
                         case "model":{
-                            console.log(LoadModelSync(path.join(editor.dirname, f.path)));
+                            LoadModel(path.join(editor.dirname, f.path), function(d){
+                                f.data = d;
+                            });
+                            break;
+                        }
+                    
+                        case "image":{
+                            f.data = new THREE.TextureLoader().load(path.join(editor.dirname, f.path));
+                            break;
+                        }
+
+                        default:{
+                            f.data = null;
+                            break;
+                        }
+                    }
+                }
+
+                let hash = BReadString2(d, i, 32);
+            }
+
+            let wait = function(){
+                setTimeout(function(){
+                    let count = 0;
+                    for (let j = 0; j < file_loadings.length; j++) {
+                        if(file_loadings[j].data !== undefined){
+                            count += 1;
+                        }
+                    }
+                    if(count == file_loadings.length){
+                        after_load_file();
+                    }
+                    else{
+                        wait();
+                    }
+                }, 100);
+            }
+            wait();
+        }
+        
+        let after_load_file = function(){
+
+            //models
+            {
+                let size = BReadUint32(d, i);
+            }
+
+            //Meshes
+            {
+                let size = BReadUint32(d, i);
+            }
+
+            //Armatures
+            {
+                let size = BReadUint32(d, i);
+            }
+
+            //Animations
+            {
+                let size = BReadUint32(d, i);
+            }
+
+            //Animation Systems
+            {
+                let size = BReadUint32(d, i);
+            }
+
+            //Shaders
+            {
+                let size = BReadUint32(d, i);
+            }
+
+            //Textures
+            {
+                let size = BReadUint32(d, i);
+            }
+
+            //Materials
+            {
+                let size = BReadUint32(d, i);
+            }
+
+            //Renderers
+            {
+                let size = BReadUint32(d, i);
+            }
+
+            //Scripts
+            {
+                let size = BReadUint32(d, i);
+            }
+
+            //Objects
+            {
+                let size = BReadUint32(d, i);
+                let load_obj = function(){
+                    let o = null;
+                    let type = BReadUint32(d, i);
+                    switch (type) {
+                        case 1:{
+                            o = new THREE.Mesh();
+                            break;
+                        }
+                    
+                        default:{
+                            o = new THREE.Object3D();
+                            break;
+                        }
+                    }
+
+                    o.name = BReadString(d, i);
+
+                    o["display_type"] = BReadUint32(d, i);
+                    o["display_priority"] = BReadUint32(d, i);
+
+                    o.position.x = BReadFloat(d, i);
+                    o.position.y = BReadFloat(d, i);
+                    o.position.z = BReadFloat(d, i);
+
+                    o.rotation.x = BReadFloat(d, i);
+                    o.rotation.y = BReadFloat(d, i);
+                    o.rotation.z = BReadFloat(d, i);
+
+                    o.scale.x = BReadFloat(d, i);
+                    o.scale.y = BReadFloat(d, i);
+                    o.scale.z = BReadFloat(d, i);
+
+                    switch (type) {
+                        case 1:{
+                            //armature
+                            if(BReadString2(d, i, 1) == "O"){
+                                //load armature
+                            }
+                            
+                        
+                            //mesh
+                            if(BReadString2(d, i, 1) == "O"){
+                                if(BReadUint8(d, i) == 1){
+                                    let hash = BReadString2(d, i, 32);
+                                }
+                                else{
+                                    //inside
+                                }
+                            }
+
+                            //material
+                            if(BReadString2(d, i, 1) == "O"){
+                                if(BReadUint8(d, i) == 1){
+                                    let hash = BReadString2(d, i, 32);
+                                }
+                                else{
+                                    //inside
+                                }
+                            }
+                            
                             break;
                         }
                     
                         default:
                             break;
                     }
-                }
 
-                let hash = BReadString2(d, i, 32);
-            }
-        }
-        
-        //models
-        {
-            let size = BReadUint32(d, i);
-        }
-
-        //Meshes
-        {
-            let size = BReadUint32(d, i);
-        }
-
-        //Armatures
-        {
-            let size = BReadUint32(d, i);
-        }
-
-        //Animations
-        {
-            let size = BReadUint32(d, i);
-        }
-
-        //Animation Systems
-        {
-            let size = BReadUint32(d, i);
-        }
-
-        //Shaders
-        {
-            let size = BReadUint32(d, i);
-        }
-
-        //Textures
-        {
-            let size = BReadUint32(d, i);
-        }
-
-        //Materials
-        {
-            let size = BReadUint32(d, i);
-        }
-
-        //Renderers
-        {
-            let size = BReadUint32(d, i);
-        }
-
-        //Scripts
-        {
-            let size = BReadUint32(d, i);
-        }
-
-        //Objects
-        {
-            let size = BReadUint32(d, i);
-            let load_obj = function(){
-                let o = null;
-                o = new THREE.Object3D();
-                let type = BReadUint32(d, i);
-                // switch (type) {
-                //     // case value:
-                        
-                //     //     break;
-                
-                //     default:
-                //         o = new THREE.Object3D();
-                //         break;
-                // }
-
-                o.name = BReadString(d, i);
-
-                o["display_type"] = BReadUint32(d, i);
-                o["display_priority"] = BReadUint32(d, i);
-
-                o.position.x = BReadFloat(d, i);
-                o.position.y = BReadFloat(d, i);
-                o.position.z = BReadFloat(d, i);
-
-                o.rotation.x = BReadFloat(d, i);
-                o.rotation.y = BReadFloat(d, i);
-                o.rotation.z = BReadFloat(d, i);
-
-                o.scale.x = BReadFloat(d, i);
-                o.scale.y = BReadFloat(d, i);
-                o.scale.z = BReadFloat(d, i);
-
-                switch (type) {
-                    case 1:{
-                        //armature
-                        if(BReadString2(d, i, 1) == "O"){
-                            //load armature
-                        }
-                        
-                    
-                        //mesh
-                        if(BReadString2(d, i, 1) == "O"){
-                            if(BReadUint8(d, i) == 1){
-                                let hash = BReadString2(d, i, 32);
-                            }
-                            else{
-                                //inside
-                            }
-                        }
-
-                        //material
-                        if(BReadString2(d, i, 1) == "O"){
-                            if(BReadUint8(d, i) == 1){
-                                let hash = BReadString2(d, i, 32);
-                            }
-                            else{
-                                //inside
-                            }
-                        }
-                        
-                        break;
+                    let ch_size = BReadUint32(d, i);
+                    for (let j = 0; j < ch_size; j++) {
+                        o.add(load_obj());
                     }
-                
-                    default:
-                        break;
+                    console.log(o);
+                    return o;
                 }
+                for (let j = 0; j < size; j++) {
+                    scene.add(load_obj());
+                }
+            }
 
-                let ch_size = BReadUint32(d, i);
-                for (let j = 0; j < ch_size; j++) {
-                    o.add(load_obj());
-                }
-                console.log(o);
-                return o;
-            }
-            for (let j = 0; j < size; j++) {
-                scene.add(load_obj());
-            }
         }
 
         return scene;
