@@ -16,10 +16,9 @@ module.exports = class{
         `;
 
         this.changeDataCallback = this.update;
+        this.selectCallback = this.updateSelect;
 
         this.container = null;
-        this.watcher = null;
-        this.id = 0;
     }
 
     destroy() {
@@ -27,14 +26,13 @@ module.exports = class{
     }
 
     showObj(obj, con){
-        this.id += 1;
         if(obj.children.length > 0){
             con.append(`
-            <li class="object_list_item" id="` + this.id + `">
+            <li class="object_list_item" id="` + obj.uuid + `">
                 <div class="object_list_icon"><img src="ResourcesStatic/img/` + String(obj.type).toLocaleLowerCase() + `.png" /></div>
                 <div class="object_list_name">` + obj.name + `</div>
                 <div style="clear: both"></div>
-                <ul class="object_list_item_children" id="` + this.id + `"></ul>
+                <ul class="object_list_item_children" id="` + obj.uuid + `"></ul>
             </li>
             `);
             let p = $(con).children("li").children(".object_list_item_children").eq($(con).children("li").children(".object_list_item_children").length - 1);
@@ -44,7 +42,7 @@ module.exports = class{
         }
         else{
             con.append(`
-            <li class="object_list_item" id="` + this.id + `">
+            <li class="object_list_item" id="` + obj.uuid + `">
                 <div class="object_list_icon"><img src="ResourcesStatic/img/` + String(obj.type).toLocaleLowerCase() + `.png" /></div>
                 <div class="object_list_name">` + obj.name + `</div>
                 <div style="clear: both"></div>
@@ -61,12 +59,33 @@ module.exports = class{
         let scene = editor.project.scene.data;
         
         $(this.container).children(".context").html("");
-        this.id = 0;
         for (let i = 0; i < scene.children.length; i++) {
             if(scene.children[i].type == "LineSegments" || scene.children[i].type == "AmbientLight"){
                 continue;
             }
             this.showObj(scene.children[i], $( this.container).children(".context"));
+        }
+
+        let t = this;
+        $(".object_list_name").click(function(){
+            if($(this).parent().hasClass("object_list_item_select")){
+                editor.selected = {
+                    type: "none"
+                };
+            }
+            else{
+                editor.selected = {
+                    type: "object",
+                    uuid: $(this).parent().attr("id")
+                };
+            }
+        });
+    }
+
+    updateSelect(editor){
+        $(".object_list_item").removeClass("object_list_item_select");
+        if(editor.selected.type == "object"){
+            $(".object_list_item#"+editor.selected.uuid).addClass("object_list_item_select");
         }
     }
 

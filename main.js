@@ -171,12 +171,18 @@ WebContext.openDevTools(); //tymczasowo
                 {
                     label: "Light Point",
                     click(){
-                        // let l = new THREE.PointLight( 0xFFFFFF, 1, 100 );
-                        // l.name = "Light Point";
-                        // l["ambient"] = new THREE.Color(0x222222);
-                        // l["specular"] = new THREE.Color(0xffffff);
-                        // editor_data.data.object.push(l);
-                        // editor_update_data();
+                        if(editor.project.scene.data !== null){
+                            let l = new THREE.PointLight( 0xFFFFFF, 1, 100 );
+                            l.name = "Light Point";
+                            l["ambient"] = new THREE.Color(0x222222);
+                            l["specular"] = new THREE.Color(0xffffff);
+                            editor.project.scene.data.add(l);
+                            CallFunctionFromModules("changeDataCallback");
+                            editor.selected = {
+                                type: "object",
+                                uuid: l.uuid
+                            };
+                        }
                     }
                 },
                 {
