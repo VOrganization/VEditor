@@ -106,7 +106,7 @@ module.exports = class{
 
             let found = false;
             for (let i = 0; i < t.scene.children.length; i++) {
-                if(t.scene.children[i] == grid || t.scene.children[i] == ambient || t.scene.children[i] == dir){
+                if(t.scene.children[i] == grid || t.scene.children[i] == ambient){
                     found = true;
                     break;
                 }
@@ -114,7 +114,6 @@ module.exports = class{
             if(!found){
                 t.scene.add(grid);
                 t.scene.add(ambient);
-                t.scene.add(dir);
             }
 
 			t.renderer.render(t.scene, t.camera);

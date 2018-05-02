@@ -41,6 +41,37 @@ function BReadString2(data, i, size){
     return s;
 }
 
+function BReadColorRGB(data, i, c){
+    if(c !== undefined){
+        c.r = BReadFloat(data, i);
+        c.g = BReadFloat(data, i);
+        c.b = BReadFloat(data, i);
+        return c;
+    }
+    else{
+        return {
+            r: BReadFloat(data, i),
+            g: BReadFloat(data, i),
+            b: BReadFloat(data, i),
+        }
+    }
+}
+
+function BReadTexture(data, i){
+    if(BReadString2(data, i, 1) == "O"){
+        if(BReadUint8(data, i) == 1){
+            let h = BReadString2(data, i, 32);
+            return null;
+        }
+        else{
+            return null;
+        }
+    }
+    else{
+        return null;
+    }
+}
+
 module.exports = class{
     constructor(){
         this.type = "calculation";
@@ -76,7 +107,6 @@ module.exports = class{
             return scene;
         }
         d = new Buffer(d);
-        console.log(d);
 
         let defaultMaterial = new THREE.MeshPhongMaterial();
 
@@ -111,14 +141,14 @@ module.exports = class{
                     context = BReadString(d, i);
                     if(f === null && !fs.existsSync(path.join(editor.dirname, name))){
                         fs.writeFileSync(path.join(editor.dirname, name), context);
-                        f = {
-                            type: findFileType(name),
+                        editor.project.files.push({
+                            type: null,
                             name: path.basename(name, path.extname(name)),
                             ext: path.extname(name),
                             path: name,
                             data: null
-                        };
-                        editor.project.files.push(f);
+                        });
+                        f = editor.project.files[editor.project.files.length - 1];
                     }
                 }
 
@@ -127,12 +157,11 @@ module.exports = class{
                         f.type = findFileType(f.ext);
                     }
 
-                    f.data = undefined;
-                    file_loadings.push(f);
-
                     switch (f.type) {
 
                         case "model":{
+                            f.data = undefined;
+                            file_loadings.push(f);
                             LoadModel(path.join(editor.dirname, f.path), function(d){
                                 f.data = d;
                             });
@@ -145,7 +174,6 @@ module.exports = class{
                         }
 
                         default:{
-                            f.data = null;
                             break;
                         }
                     }
@@ -218,18 +246,60 @@ module.exports = class{
                         BReadString2(d, i, 32); //get hash for no craching
                     }
                     else{
+                        let mat = new THREE.MeshPhongMaterial();
                         let type = BReadUint32(d, i);
-                        let name = BReadString(d, i);
-                        let hash = BReadString2(d, i, 32);
+                        if(type == 1){
+                            mat = new THREE.MeshStandardMaterial();
+                        }
 
-                        let opacity = BReadFloat(d, i);
+                        mat.name = BReadString(d, i);
+                        mat["EID"] = BReadString2(d, i, 32);
 
-                        BReadFloat(d, i)
-                        BReadFloat(d, i)
-                        BReadFloat(d, i)
-                        BReadFloat(d, i)
+                        mat.opacity = BReadFloat(d, i);
 
+                        mat.color.r = BReadFloat(d, i);
+                        mat.color.g = BReadFloat(d, i);
+                        mat.color.b = BReadFloat(d, i);
+                        mat.color["a"] = BReadFloat(d, i);
+                        mat.map = BReadTexture(d, i);
+
+                        if(type == 0){
+                            mat.specular.r = BReadFloat(d, i);
+                            mat.specular.g = BReadFloat(d, i);
+                            mat.specular.b = BReadFloat(d, i);
+                            mat.specular["a"] = BReadFloat(d, i);
+                            mat.shininess = BReadFloat(d, i);
+                            mat.specularMap = BReadTexture(d, i);
+                        }
                         
+                        mat.emissive.r = BReadFloat(d, i);
+                        mat.emissive.g = BReadFloat(d, i);
+                        mat.emissive.b = BReadFloat(d, i);
+                        mat.emissive["a"] = BReadFloat(d, i);
+                        mat.emissiveMap = BReadTexture(d, i);
+
+                        if(type == 1){
+                            console.log("OJ");
+                        }
+
+                        mat.bumpMap = BReadTexture(d, i);
+                        mat.bumpScale = BReadFloat(d, i);
+
+                        mat.normalMap = BReadTexture(d, i);
+
+                        mat.aoMap = BReadTexture(d, i);
+                        mat.aoMapIntensity = BReadFloat(d, i);
+
+                        mat.reflectivity = BReadFloat(d, i);
+                        mat.refractionRatio = BReadFloat(d, i);
+                        mat["dynamicCube"] = BReadUint8(d, i);
+
+                        BReadUint32(d, i);
+                        BReadUint32(d, i);
+                        BReadUint32(d, i);
+
+                        console.log(mat);
+                        editor.project.materials.push(mat);
                     }
                 }
             }
@@ -295,6 +365,7 @@ module.exports = class{
                     o.scale.z = BReadFloat(d, i);
 
                     switch (type) {
+
                         case 1:{
                             //armature
                             if(BReadString2(d, i, 1) == "O"){
@@ -306,11 +377,17 @@ module.exports = class{
                             if(BReadString2(d, i, 1) == "O"){
                                 if(BReadUint8(d, i) == 1){
                                     let hash = BReadString2(d, i, 32);
+                                    let found = false;
                                     for (let j = 0; j < editor.project.meshes.length; j++) {
                                         if(hash == editor.project.meshes[j].EID){
                                             o.geometry = editor.project.meshes[j];
+                                            found = true;
                                             break;
                                         }
+                                    }
+                                    if(!found){
+                                        console.log("Error while finding mesh");
+                                        console.log(hash);
                                     }
                                 }
                                 else{
@@ -343,37 +420,22 @@ module.exports = class{
                         }
                     
                         case 2:{
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
+                            o["ambient"] = BReadColorRGB(d, i);
+                            o["color"] = BReadColorRGB(d, i);
+                            o["specular"] = BReadColorRGB(d, i);
 
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            //point light
+                            o["decay"] = BReadFloat(d, i);
+                            o["linear"] = BReadFloat(d, i);
+                            o["quadratic"] = BReadFloat(d, i);
+                            
                             break;
                         }
 
                         case 3:{
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
+                            o["ambient"] = BReadColorRGB(d, i);
+                            o["color"] = BReadColorRGB(d, i);
+                            o["specular"] = BReadColorRGB(d, i);
 
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
 
                             BReadFloat(d, i);
                             BReadFloat(d, i);

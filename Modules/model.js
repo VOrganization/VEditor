@@ -62,6 +62,11 @@ function LoadModel(p, fun){
     }
 
     let e = path.extname(p).toLocaleLowerCase();
+    if(e == ".dae"){
+        //musze napisac dla dae
+        fun(null);
+        return;
+    }
     for (let i = 0; i < modelLoaders.length; i++) {
         if(modelLoaders[i].ext == e){
             let l = new modelLoaders[i].loader(new THREE.LoadingManager());
