@@ -181,8 +181,9 @@ module.exports = class{
         if(obj.type == "Mesh"){
             obj.geometry.computeBoundingSphere();
             let r = obj.geometry.boundingSphere.radius * 1.5;
+            let c = obj.geometry.boundingSphere.center;
             let box = new THREE.Box3();
-            box.setFromCenterAndSize(new THREE.Vector3(0,0,0), new THREE.Vector3(r,r,r));
+            box.setFromCenterAndSize(new THREE.Vector3(c.x, c.y, c.z), new THREE.Vector3(r,r,r));
             let h = new THREE.Box3Helper(box, 0xffff00);
             h.name = "Helper";
             h.matrixAutoUpdate = true;
@@ -243,13 +244,13 @@ module.exports = class{
                 editor.project.scene.data.add(grid);
             }
             this.calcHelper(editor.project.scene.data);
+            this.scene = editor.project.scene.data;
         }
         else{
             this.scene = new THREE.Scene();
             this.scene.background = new THREE.Color(0x222222);
         }
     }
-
 
     updateHelper(uuid, obj, t){
         let ch = false;
