@@ -279,18 +279,16 @@ module.exports = class{
     initModel(editor){
         $(this.container).children(".model_settings").children(".model_add_to_scene").click(function(){
             if(editor.selected.type == "file"){
-
                 LoadModel(editor.selected.filename, function(d){
                     if(d !== null){
                         editor.project.scene.data.add(d);
-                        
+                        CallFunctionFromModules("changeDataCallback");
                     }
                     else{
                         console.log("Error while loading model");
                         console.log(editor.selected.filename);
                     }
                 });
-            
             }
         });
     }

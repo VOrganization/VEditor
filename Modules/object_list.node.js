@@ -26,6 +26,9 @@ module.exports = class{
     }
 
     showObj(obj, con){
+        if(obj.name == "Helper"){
+            return;
+        }
         if(obj.children.length > 0){
             con.append(`
             <li class="object_list_item" id="` + obj.uuid + `">

@@ -19,18 +19,16 @@ module.exports = class{
         this.containerName = "context_scene";
         this.html = `<div class="context_scene" style="width: 100%; height: 100%;"></div>`;
 
-        this.saveCallback = null;
         this.loadCallback = this.initData;
-        this.createCallback = null;
-        this.exportCallback = null;
-        this.importCallback = null;
-        this.exitCallback = null;
+        this.changeDataCallback = this.updateData;
+        this.selectCallback = this.updateSelected;
 
         this.container = null;
         this.THREE = null;
         this.renderer = null;
         this.camera = null;
         this.scene = null;
+        this.helper = new Array();
         this.rotation = { x: 45, y: 45, z: 0 };
     }
 
@@ -93,9 +91,9 @@ module.exports = class{
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x222222);
         
-        let grid = new THREE.GridHelper(1000, 1000, 0xffffff, 0x888888);
-        let ambient = new THREE.AmbientLight(0x444444);
-        let dir = new THREE.DirectionalLight(0xffffff, 0.2);
+        // let grid = new THREE.GridHelper(100, 100, 0xffffff, 0x888888);
+        // grid.name = "Grid";
+        // this.scene.add(grid);
 
         let renderFunction = function(){
             requestAnimationFrame(renderFunction);
@@ -103,18 +101,6 @@ module.exports = class{
             t.scene.rotation.x = t.rotation.x;
             t.scene.rotation.y = t.rotation.y;
             t.scene.rotation.z = t.rotation.z;
-
-            let found = false;
-            for (let i = 0; i < t.scene.children.length; i++) {
-                if(t.scene.children[i] == grid || t.scene.children[i] == ambient){
-                    found = true;
-                    break;
-                }
-            }
-            if(!found){
-                t.scene.add(grid);
-                t.scene.add(ambient);
-            }
 
 			t.renderer.render(t.scene, t.camera);
         }
@@ -166,6 +152,141 @@ module.exports = class{
                 }
             }
         });
+    }
+
+    calcHelper(obj){
+        if(obj.type == "LineSegments"){
+            return;
+        }
+
+        for (let i = 0; i < obj.children.length; i++) {
+            if(obj.children[i].name == "Helper"){
+                obj.remove(obj.children[i]);
+            }
+        }
+
+        let help = new THREE.AxesHelper(1);
+        help.name = "Helper";
+        help["EID"] = obj.uuid;
+
+        if(obj.type == "Object3D" || obj.type == "Group"){
+            let box = new THREE.Box3();
+            box.setFromCenterAndSize(new THREE.Vector3(0,0,0), new THREE.Vector3(0.3,0.3,0.3));
+            let h = new THREE.Box3Helper(box, 0xffff00);
+            h.name = "Helper";
+            h.matrixAutoUpdate = true;
+            help.add(h);
+        }
+
+        if(obj.type == "Mesh"){
+            obj.geometry.computeBoundingSphere();
+            let r = obj.geometry.boundingSphere.radius * 1.5;
+            let box = new THREE.Box3();
+            box.setFromCenterAndSize(new THREE.Vector3(0,0,0), new THREE.Vector3(r,r,r));
+            let h = new THREE.Box3Helper(box, 0xffff00);
+            h.name = "Helper";
+            h.matrixAutoUpdate = true;
+            help.add(h);
+        }
+
+        if(obj.type == "PerspectiveCamera"){
+            obj.aspect = (this.container.width() / this.container.height());
+            let h = new THREE.CameraHelper(obj);
+            h.name = "Helper";
+            h.matrixAutoUpdate = true;
+            help.add(h);
+        }
+
+        if(obj.type == "PointLight"){
+            let h = new THREE.PointLightHelper(obj, obj.decay);
+            h.name = "Helper";
+            h.matrixAutoUpdate = true;
+            help.add(h);
+        }
+
+        if(obj.type == "DirectionalLight"){
+            let h = new THREE.DirectionalLightHelper(obj, 5);
+            h.name = "Helper";
+            h.matrixAutoUpdate = true;
+            help.add(h);
+        }
+
+        if(obj.type == "SpotLight"){
+            let h = new THREE.SpotLightHelper(obj);
+            h.name = "Helper";
+            h.matrixAutoUpdate = true;
+            help.add(h);
+        }
+
+        obj.add(help);
+
+        for (let i = 0; i < obj.children.length; i++) {
+            if(obj.children[i].type == "LineSegments" || obj.children[i].type == "AmbientLight" || obj.children[i].name == "Helper"){
+                continue;
+            }
+            this.calcHelper(obj.children[i]);
+        }
+    }
+
+    updateData(editor){
+        if(editor.project.scene.data !== undefined || editor.project.scene.data !== null){
+            let found = false;
+            for (let i = 0; i < editor.project.scene.data.children.length; i++) {
+                if(editor.project.scene.data.children[i].name == "Grid"){
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                let grid = new THREE.GridHelper(100, 100, 0xffffff, 0x888888);
+                grid.name = "Grid";
+                editor.project.scene.data.add(grid);
+            }
+            this.calcHelper(editor.project.scene.data);
+        }
+        else{
+            this.scene = new THREE.Scene();
+            this.scene.background = new THREE.Color(0x222222);
+        }
+    }
+
+
+    updateHelper(uuid, obj, t){
+        let ch = false;
+        if(obj.name == "Helper"){
+            if(obj.EID == uuid){
+                obj.material.color.r = 0;
+                obj.material.color.g = 0;
+                obj.material.color.b = 1;    
+                ch = true;
+            }
+            else{
+                if(t){
+                    obj.material.color.r = 0;
+                    obj.material.color.g = 0;
+                    obj.material.color.b = 1;
+                }
+                else{
+                    obj.material.color.r = 1;
+                    obj.material.color.g = 1;
+                    obj.material.color.b = 0;
+                }
+            }
+        }
+
+
+        for (let i = 0; i < obj.children.length; i++) {
+            this.updateHelper(uuid, obj.children[i], ch);
+        }
+    }
+
+    updateSelected(editor){
+        if(editor.selected.type == "object"){
+            this.updateHelper(editor.selected.uuid, editor.project.scene.data);
+        }
+        else{
+            this.updateHelper("", editor.project.scene.data, false);
+        }
     }
 
     setContainer(jqueryObject, editor){
