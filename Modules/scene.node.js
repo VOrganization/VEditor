@@ -28,6 +28,8 @@ module.exports = class{
         this.renderer = null;
         this.camera = null;
         this.scene = null;
+        this.raycaster = null;
+        this.mouse = null;
         this.selectedObject = null;
         this.helper = new Array();
         this.rotation = { x: 45, y: 45, z: 0 };
@@ -87,6 +89,9 @@ module.exports = class{
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         $(this.container).append(this.renderer.domElement);
         
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+
         this.camera = new THREE.PerspectiveCamera( 75, 1, 0.1, 10000 );
         this.camera.position.z = 5;
         
@@ -182,9 +187,46 @@ module.exports = class{
                 keyPress = e.button;
                 startMouseX = e.pageX;
                 startMouseY = e.pageY;
+
                 if(keyPress == 1){
                     startX = t.rotation.x;
                     startY = t.rotation.y;
+                }
+
+                if(keyPress == 2){
+                    t.mouse.x = ( (e.pageX - t.container.offset().left) / t.container.width() ) * 2 - 1;
+                    t.mouse.y = - ( (e.pageY - t.container.offset().top) / t.container.height() ) * 2 + 1;
+
+                    t.raycaster.setFromCamera(t.mouse, t.camera);
+                    let intersects = t.raycaster.intersectObjects(t.scene.children, true);
+                    let found = false;
+                    for ( let i = 0; i < intersects.length; i++ ){
+                        if(String(intersects[i].object.name).indexOf("Helper") > -1){
+                            let id = undefined;
+                            if(intersects[i].object.EID !== undefined){
+                                id = intersects[i].object.EID;
+                            }
+                            else{
+                                id = intersects[i].object.parent.EID;
+                            }
+                           
+                            if(id !== undefined){
+                                t.editor.selected = {
+                                    type: "object",
+                                    uuid: id, 
+                                };
+                                break;
+                            }
+                        }
+
+                        if(intersects[i].object.type == "Mesh"){
+                            t.editor.selected = {
+                                type: "object",
+                                uuid: intersects[i].object.uuid, 
+                            };
+                            break;
+                        }
+                    }
                 }
             }
         });
@@ -245,6 +287,8 @@ module.exports = class{
                     t.selectedObject[type].z = startData.z + d.z;
                 }
 
+                t.selectedObject.updateMatrix();
+
             }
         });
 
@@ -281,7 +325,7 @@ module.exports = class{
         }
 
         let help = new THREE.AxesHelper(1);
-        help.name = "Helper";
+        help.name = "Helper_" + obj.uuid;
         help["EID"] = obj.uuid;
 
         if(obj.type == "Object3D" || obj.type == "Group"){
@@ -374,7 +418,7 @@ module.exports = class{
             this.selectedObject = obj;
         }
 
-        if(obj.name == "Helper"){
+        if(String(obj.name).indexOf("Helper") > -1){
             if(obj.EID == uuid){
                 obj.material.color.r = 0;
                 obj.material.color.g = 0;

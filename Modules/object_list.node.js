@@ -26,7 +26,7 @@ module.exports = class{
     }
 
     showObj(obj, con){
-        if(obj.name == "Helper"){
+        if(String(obj.name).indexOf("Helper") > -1){
             return;
         }
         if(obj.children.length > 0){
