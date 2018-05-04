@@ -13,6 +13,7 @@ const crypto = require("crypto");
 
 
 module.exports = class{
+
     constructor(){
         this.type = "display";
         this.name = "scene";
@@ -24,12 +25,13 @@ module.exports = class{
         this.selectCallback = this.updateSelected;
 
         this.container = null;
-        this.THREE = null;
         this.renderer = null;
         this.camera = null;
         this.scene = null;
+        this.selectedObject = null;
         this.helper = new Array();
         this.rotation = { x: 45, y: 45, z: 0 };
+        this.editor = null;
     }
 
     destroy() {
@@ -112,30 +114,143 @@ module.exports = class{
             t.renderer.setSize( t.container.width(), t.container.height() );
         });
 
+        this.events();
+    }
+
+    events(){
+        let t = this;
+
         let startX = 0;
         let startY = 0;
+        let startData = null;
         let startMouseX = 0;
         let startMouseY = 0;
         let keyPress = -1;
+        let type = "";
+        let option = "";
+
+        $(document).keypress(function(e){
+            if(t.selectedObject !== null){
+                if(keyPress > 3){
+                    option = e.key;
+                }
+                else{
+                    startMouseX = null;
+                    startMouseY = null;
+
+                    if(e.key == "g"){
+                        type = "position";
+                        keyPress = 4;
+                    }
+
+                    if(e.key == "r"){
+                        type = "rotation";
+                        keyPress = 4;
+                    }
+
+                    if(e.key == "s"){
+                        type = "scale";
+                        keyPress = 4;
+                    }
+
+                    if(keyPress > 3){
+                        let o = t.selectedObject[type];
+                        startData = { x: o.x, y: o.y, z: o.z };
+                    }
+
+                    if(e.key == "a"){
+                        keyPress = -1;
+                        editor.selected = { type: "none" };
+                        t.selectedObject = null;
+                    }
+                    
+                }
+            }
+        });
+
         $(this.container).bind("mousedown", function(e){
-            keyPress = e.button;
-            startMouseX = e.pageX;
-            startMouseY = e.pageY;
-            if(keyPress == 1){
-                startX = t.rotation.x;
-                startY = t.rotation.y;
+            if(keyPress > 3){
+                if(e.button == 2){
+                    t.selectedObject[type].x = startData.x;
+                    t.selectedObject[type].y = startData.y;
+                    t.selectedObject[type].z = startData.z;
+                }
+                keyPress = -1;
+                option = "";
+            }
+            else{
+                keyPress = e.button;
+                startMouseX = e.pageX;
+                startMouseY = e.pageY;
+                if(keyPress == 1){
+                    startX = t.rotation.x;
+                    startY = t.rotation.y;
+                }
             }
         });
 
         $(this.container).bind("mousemove", function(e){
+
             if(keyPress == 1){
                 t.rotation.y = startY + ((e.pageX - startMouseX)*0.5) * Math.PI / 180;
                 t.rotation.x = startX + ((e.pageY - startMouseY)*0.5) * Math.PI / 180;
+            }
+
+            if(keyPress > 3){
+                if(startMouseX == null || startMouseY == null){
+                    startMouseX = e.pageX;
+                    startMouseY = e.pageY;
+                }
+
+                let m = 0.01;
+                if(e.shiftKey){
+                    m = 0.001;
+                }
+                let r = ( (e.pageX - startMouseX) + (e.pageY - startMouseY) ) * m;
+
+                let d = { x: r, y: r, z: r };
+
+                if(type == "position"){
+                    let matrix = new THREE.Matrix4();
+                    matrix = matrix.extractRotation(t.scene.matrix);
+                    let dir = new THREE.Vector3( 1, 1, 1 ).applyMatrix4(matrix);
+
+                    d = {
+                        x: dir.x * (e.pageX - startMouseX) * (m * 10),
+                        y: -dir.y * (e.pageY - startMouseY) * (m * 10),
+                        z: r, 
+                    }
+                }
+
+                if(type == "rotation"){
+                    d = {
+                        x: (e.pageY - startMouseY) * m,
+                        y: (e.pageX - startMouseX) * m,
+                        z: 0, 
+                    }
+                }
+
+                if(option == "x"){
+                    t.selectedObject[type].x = startData.x + d.x;
+                }
+                else if(option == "y"){
+                    t.selectedObject[type].y = startData.y + d.y;
+                }
+                else if(option == "z"){
+                    t.selectedObject[type].z = startData.z + d.z;
+                }
+                else{
+                    t.selectedObject[type].x = startData.x + d.x;
+                    t.selectedObject[type].y = startData.y + d.y;
+                    t.selectedObject[type].z = startData.z + d.z;
+                }
+
             }
         });
 
         $(this.container).bind("mouseup", function(e){
             keyPress = -1;
+            option = "";
         });
 
         $(this.container).bind("mousewheel", function(e) {
@@ -254,6 +369,11 @@ module.exports = class{
 
     updateHelper(uuid, obj, t){
         let ch = false;
+
+        if(obj.uuid == uuid){
+            this.selectedObject = obj;
+        }
+
         if(obj.name == "Helper"){
             if(obj.EID == uuid){
                 obj.material.color.r = 0;
@@ -287,12 +407,13 @@ module.exports = class{
         }
         else{
             this.updateHelper("", editor.project.scene.data, false);
+            this.selectedObject = null;
         }
     }
 
     setContainer(jqueryObject, editor){
         this.container = jqueryObject;
-        this.THREE = editor.THREE;
+        this.editor = editor;
         this.initScene();
     }
 }
