@@ -1,4 +1,5 @@
 const path = require("path");
+const watchjs = require("watchjs");
 
 module.exports = class{
 
@@ -224,11 +225,26 @@ module.exports = class{
         this.exitCallback = null;
         this.selectCallback = this.update;
 
+        this.selectObject = { position: null, rotation: null, scale: null };
+
         this.container = null;
     }
 
     destroy() {
         
+    }
+
+    findObject(uuid, obj){
+        if(obj.uuid == uuid){
+            return obj;
+        }
+        for (let i = 0; i < obj.children.length; i++) {
+            let o = this.findObject(uuid, obj.children[i]);
+            if(o !== null){
+                return o;
+            }
+        }
+        return null;
     }
 
     update(editor){
@@ -268,7 +284,18 @@ module.exports = class{
 
         }
         else if(editor.selected.type == "object"){
+            this.selectObject = this.findObject(editor.selected.uuid, editor.project.scene.data);
+            if(this.selectObject === null){
+                return;
+            }
 
+            let obj = this.selectObject;
+
+            this.container.children(".context_settings_header").children(".context_settings_header_icon").children("img").attr("src", "ResourcesStatic/img/" + obj.type + ".png");
+            this.container.children(".context_settings_header").children(".context_settings_header_data").children(".context_settings_header_name").html(obj.name);
+
+            this.setTransform(editor);
+            
         }
         else{
             $(this.container).children(".context_settings_header").children(".context_settings_header_icon").children("img").attr("src", "");
@@ -293,8 +320,97 @@ module.exports = class{
         });
     }
 
+    initTransform(editor){
+        let t = this;
+
+        t.container.children(".transform_settings").children(".transform_pos_x").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.position.x = Number($(this).val());
+            }
+        });
+        t.container.children(".transform_settings").children(".transform_pos_y").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.position.y = Number($(this).val());
+            }
+        });
+        t.container.children(".transform_settings").children(".transform_pos_z").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.position.z = Number($(this).val());
+            }
+        });
+
+
+        t.container.children(".transform_settings").children(".transform_rot_x").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.rotation.x = Number(($(this).val() * 3.14) / 180);
+            }
+        });
+        t.container.children(".transform_settings").children(".transform_rot_y").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.rotation.y = Number(($(this).val() * 3.14) / 180);
+            }
+        });
+        t.container.children(".transform_settings").children(".transform_rot_z").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.rotation.z = Number(($(this).val() * 3.14) / 180);
+            }
+        });
+
+
+        t.container.children(".transform_settings").children(".transform_sca_x").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.scale.x = Number($(this).val());
+            }
+        });
+        t.container.children(".transform_settings").children(".transform_sca_y").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.scale.y = Number($(this).val());
+            }
+        });
+        t.container.children(".transform_settings").children(".transform_sca_z").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.scale.z = Number($(this).val());
+            }
+        });
+    }
+
+    setTransform(editor){
+        let t = this;
+        let obj = this.selectObject;
+
+        this.container.children(".transform_settings").show();
+        this.container.children(".transform_settings").children(".transform_pos_x").val(Number(obj.position.x).toFixed(3));
+        this.container.children(".transform_settings").children(".transform_pos_y").val(Number(obj.position.y).toFixed(3));
+        this.container.children(".transform_settings").children(".transform_pos_z").val(Number(obj.position.z).toFixed(3));
+        this.container.children(".transform_settings").children(".transform_rot_x").val(((obj.rotation.x * 180) / 3.14).toFixed(3));
+        this.container.children(".transform_settings").children(".transform_rot_y").val(((obj.rotation.y * 180) / 3.14).toFixed(3));
+        this.container.children(".transform_settings").children(".transform_rot_z").val(((obj.rotation.z * 180) / 3.14).toFixed(3));
+        this.container.children(".transform_settings").children(".transform_sca_x").val(obj.scale.x.toFixed(3));
+        this.container.children(".transform_settings").children(".transform_sca_y").val(obj.scale.y.toFixed(3));
+        this.container.children(".transform_settings").children(".transform_sca_z").val(obj.scale.z.toFixed(3));
+
+        watchjs.watch(obj, "position", function(){
+            t.container.children(".transform_settings").children(".transform_pos_x").val(Number(obj.position.x).toFixed(3));
+            t.container.children(".transform_settings").children(".transform_pos_y").val(Number(obj.position.y).toFixed(3));
+            t.container.children(".transform_settings").children(".transform_pos_z").val(Number(obj.position.z).toFixed(3));
+        });
+
+        watchjs.watch(obj, "rotation", function(){
+            t.container.children(".transform_settings").children(".transform_rot_x").val(((obj.rotation.x * 180) / 3.14).toFixed(3));
+            t.container.children(".transform_settings").children(".transform_rot_y").val(((obj.rotation.y * 180) / 3.14).toFixed(3));
+            t.container.children(".transform_settings").children(".transform_rot_z").val(((obj.rotation.z * 180) / 3.14).toFixed(3));
+        });
+
+        watchjs.watch(obj, "scale", function(){
+            t.container.children(".transform_settings").children(".transform_sca_x").val(obj.scale.x.toFixed(3));
+            t.container.children(".transform_settings").children(".transform_sca_y").val(obj.scale.y.toFixed(3));
+            t.container.children(".transform_settings").children(".transform_sca_z").val(obj.scale.z.toFixed(3));
+        });
+    }
+
     init(editor){
         this.initModel(editor);
+        this.initTransform(editor);
     }
 
     setContainer(jqueryObject, editor){
