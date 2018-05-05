@@ -86,7 +86,7 @@ module.exports = class{
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(100, 100);
         this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.shadowMap.type = THREE.BasicShadowMap;
         $(this.container).append(this.renderer.domElement);
         
         this.raycaster = new THREE.Raycaster();

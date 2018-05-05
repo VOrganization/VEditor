@@ -248,6 +248,9 @@ module.exports = class{
     }
 
     update(editor){
+        this.container.children().hide();
+        this.container.children(".context_settings_header").show();
+
         if(editor.selected.type == "file"){
             let f = null;
             for (let i = 0; i < editor.project.files.length; i++) {
@@ -296,6 +299,12 @@ module.exports = class{
 
             this.setTransform(editor);
             
+            //display type and priority
+
+            if(String(obj.type).indexOf("Light") > -1){
+                this.setLight();
+            }
+
         }
         else{
             $(this.container).children(".context_settings_header").children(".context_settings_header_icon").children("img").attr("src", "");
@@ -408,9 +417,173 @@ module.exports = class{
         });
     }
 
+    initLight(editor){
+        let t = this;
+
+        t.container.children(".light_settings").children(".light_diffuse").spectrum({
+            color: "#f00",
+            showButtons: false,
+            containerClassName: "pcolor0",
+            replacerClassName: "pcolor1 pp",
+            move: function(color) {
+                if(t.selectObject !== null){
+                    t.selectObject.color = new THREE.Color(color.toHexString());
+                }
+            }
+        });
+
+        t.container.children(".light_settings").children(".light_specular").spectrum({
+            color: "#f00",
+            showButtons: false,
+            containerClassName: "pcolor0",
+            replacerClassName: "pcolor1 pp",
+            move: function(color) {
+                if(t.selectObject !== null){
+                    t.selectObject.specular = new THREE.Color(color.toHexString());
+                }
+            }
+        });
+
+        t.container.children(".light_settings").children(".light_ambient").spectrum({
+            color: "#f00",
+            showButtons: false,
+            containerClassName: "pcolor0",
+            replacerClassName: "pcolor1 pp",
+            move: function(color) {
+                if(t.selectObject !== null){
+                    t.selectObject.ambient = new THREE.Color(color.toHexString());
+                }
+            }
+        });
+
+        t.container.children(".light_settings").children(".light_int").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.intensity = Number($(this).val());
+            }
+        });
+
+        t.container.children(".light_settings").children(".point_light").children(".light_dis").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.distance = Number($(this).val());
+            }
+        });
+
+        t.container.children(".light_settings").children(".spot_light").children(".light_angle").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.angle = Number($(this).val());
+            }
+        });
+
+        t.container.children(".light_settings").children(".spot_light").children(".light_pen").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.penumbra = Number($(this).val());
+            }
+        });
+
+        t.container.children(".light_settings").children(".light_shadow").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.castShadow = $(this).prop("checked");
+                t.selectObject.shadow.bias = -0.01;
+            }
+        });
+
+        t.container.children(".light_settings").children(".light_shadow_quality").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.shadow.quality = Number($(this).val());
+            }
+        });
+
+        t.container.children(".light_settings").children(".light_shadow_near").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.shadow.camera.near = Number($(this).val());
+            }
+        });
+
+        t.container.children(".light_settings").children(".light_shadow_far").change(function(){
+            if(t.selectObject !== null){
+                t.selectObject.shadow.camera.far = Number($(this).val());
+            }
+        });
+    }
+
+    setLight(editor){
+        let t = this;
+        let obj = this.selectObject;
+
+        t.container.children(".light_settings").show();
+        t.container.children(".light_settings").children(".light_diffuse").spectrum("set", obj.color.getHexString());
+        t.container.children(".light_settings").children(".light_specular").spectrum("set", obj.specular.getHexString());
+        t.container.children(".light_settings").children(".light_ambient").spectrum("set", obj.ambient.getHexString());
+        t.container.children(".light_settings").children(".light_int").val(obj.intensity);
+        t.container.children(".light_settings").children(".light_shadow").prop("checked", obj.castShadow);
+        t.container.children(".light_settings").children(".light_shadow_quality").val(obj.shadow.quality);
+        t.container.children(".light_settings").children(".light_shadow_near").val(obj.shadow.camera.near);
+        t.container.children(".light_settings").children(".light_shadow_far").val(obj.shadow.camera.far);
+
+        watchjs.watch(obj, "color", function(){
+            t.container.children(".light_settings").children(".light_diffuse").spectrum("set", obj.color.getHexString());
+        });
+
+        watchjs.watch(obj, "specular", function(){
+            t.container.children(".light_settings").children(".light_specular").spectrum("set", obj.specular.getHexString());
+        });
+
+        watchjs.watch(obj, "ambient", function(){
+            t.container.children(".light_settings").children(".light_ambient").spectrum("set", obj.ambient.getHexString());
+        });
+
+        watchjs.watch(obj, "intensity", function(){
+            t.container.children(".light_settings").children(".light_int").val(obj.intensity);
+        });
+
+        watchjs.watch(obj, "castShadow", function(){
+            t.container.children(".light_settings").children(".light_shadow").prop("checked", obj.castShadow);
+        });
+
+        watchjs.watch(obj, "shadow", function(){
+            t.container.children(".light_settings").children(".light_shadow_quality").val(obj.shadow.quality);
+            t.container.children(".light_settings").children(".light_shadow_near").val(obj.shadow.camera.near);
+            t.container.children(".light_settings").children(".light_shadow_far").val(obj.shadow.camera.far);
+        });
+
+        if(obj.type == "DirectionalLight"){
+            t.container.children(".light_settings").children(".point_light").hide();
+            t.container.children(".light_settings").children(".spot_light").hide();
+        }
+        if(obj.type == "SpotLight"){
+            t.container.children(".light_settings").children(".point_light").show();
+            t.container.children(".light_settings").children(".spot_light").show();
+            t.container.children(".light_settings").children(".point_light").children(".light_dis").val(obj.distance);
+            t.container.children(".light_settings").children(".spot_light").children(".light_angle").val(obj.angle);
+            t.container.children(".light_settings").children(".spot_light").children(".light_pen").val(obj.penumbra);
+
+            watchjs.watch(obj, "distance", function(){
+                t.container.children(".light_settings").children(".point_light").children(".light_dis").val(obj.distance);
+            });
+    
+            watchjs.watch(obj, "angle", function(){
+                t.container.children(".light_settings").children(".spot_light").children(".light_angle").val(obj.angle);
+            });
+    
+            watchjs.watch(obj, "penumbra", function(){
+                t.container.children(".light_settings").children(".spot_light").children(".light_pen").val(obj.penumbra);
+            });
+        }
+        if(obj.type == "PointLight"){
+            t.container.children(".light_settings").children(".point_light").show();
+            t.container.children(".light_settings").children(".spot_light").hide();
+            t.container.children(".light_settings").children(".point_light").children(".light_dis").val(obj.distance);
+
+            watchjs.watch(obj, "distance", function(){
+                t.container.children(".light_settings").children(".point_light").children(".light_dis").val(obj.distance);
+            });
+        }
+    }
+
     init(editor){
         this.initModel(editor);
         this.initTransform(editor);
+        this.initLight(editor);
     }
 
     setContainer(jqueryObject, editor){

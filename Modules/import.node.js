@@ -108,7 +108,7 @@ module.exports = class{
         }
         d = new Buffer(d);
 
-        let defaultMaterial = new THREE.MeshPhongMaterial();
+        let defaultMaterial = new THREE.MeshPhongMaterial({side: THREE.DoubleSide});
 
         //header
         let header = BReadString2(d, i, 7);
@@ -416,6 +416,9 @@ module.exports = class{
                                 }
                             }
                             
+                            o.castShadow = true;
+                            o.receiveShadow = true;
+
                             break;
                         }
                     
