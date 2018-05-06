@@ -224,10 +224,15 @@ module.exports = class{
         this.importCallback = null;
         this.exitCallback = null;
         this.selectCallback = this.update;
-
+        
+        this.container = null;
+        
         this.selectObject = { position: null, rotation: null, scale: null };
 
-        this.container = null;
+        this.materialRenderer = null;
+        this.materialScene = null;
+        this.materialObject = null;
+
     }
 
     destroy() {
@@ -248,8 +253,7 @@ module.exports = class{
     }
 
     update(editor){
-        this.container.children().hide();
-        this.container.children(".context_settings_header").show();
+        this.container.children(".context_settings_div").hide();
 
         if(editor.selected.type == "file"){
             let f = null;
@@ -303,6 +307,10 @@ module.exports = class{
 
             if(String(obj.type).indexOf("Light") > -1){
                 this.setLight();
+            }
+
+            if(obj.type == "Mesh"){
+                this.setMaterial(editor);
             }
 
         }
@@ -580,10 +588,55 @@ module.exports = class{
         }
     }
 
+    initMaterial(editor){
+        let t = this;
+
+        this.materialRenderer = new THREE.WebGLRenderer({antialias: true});
+        this.materialRenderer.setSize( 200, 200 );
+        this.container.children(".material_settings").children(".material_viewer").append(this.materialRenderer.domElement);
+        
+        this.materialObject = new THREE.Mesh(new THREE.SphereGeometry(2.5, 64, 64), new THREE.MeshPhongMaterial({color: new THREE.Color(0xffffff)}));
+        
+        let light = new THREE.DirectionalLight(0xffffff, 0.5);
+        light.position.z = 4;
+
+        let camera = new THREE.PerspectiveCamera( 75, 1, 0.1, 10000 );
+        camera.position.z = 5.5;
+
+        this.materialScene = new THREE.Scene();
+        this.materialScene.add(this.materialObject);
+        this.materialScene.add(light);
+        this.materialScene.background = new THREE.Color(0x333333);
+
+        let renderFunction = function(){
+            requestAnimationFrame(renderFunction);
+            t.materialRenderer.render(t.materialScene, camera);
+        };
+        renderFunction();
+
+
+
+    }
+
+    setMaterial(editor){
+        let t = this;
+        this.container.children(".material_settings").show();
+
+        if(editor.project !== undefined){
+            this.container.children(".material_settings").children(".material_name").html("");
+            for (let i = 0; i < editor.project.materials.length; i++) {
+                let mat = editor.project.materials[i];
+                this.container.children(".material_settings").children(".material_name").html(`<option value="` + mat.name + "_" + i + `">` + mat.name + `</option>`);   
+            }
+        }
+
+    }
+
     init(editor){
         this.initModel(editor);
         this.initTransform(editor);
         this.initLight(editor);
+        this.initMaterial(editor);
     }
 
     setContainer(jqueryObject, editor){

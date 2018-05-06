@@ -97,6 +97,18 @@ module.exports = class{
         d = new Buffer(d);
 
         let defaultMaterial = new THREE.MeshPhongMaterial({side: THREE.DoubleSide});
+        defaultMaterial.name = "defaultMaterial";
+        let found = false;
+        for (let j = 0; j < editor.project.materials.length; j++) {
+            if(editor.project.materials[j].name == "defaultMaterial"){
+                found = true;
+                defaultMaterial = editor.project.materials[j];
+                break;
+            }
+        }
+        if(!found){
+            editor.project.materials.push(defaultMaterial);
+        }
 
         //header
         let header = BReadString2(d, i, 7);
