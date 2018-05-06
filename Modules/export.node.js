@@ -18,6 +18,44 @@ function BUint8(n){
     return b;
 }
 
+function BFloat(n){
+    let b = new Buffer(4);
+    b.writeFloatLE(n, 0);
+    return b;
+}
+
+function BVec3(n){
+    let b = new Buffer(12);
+    if(n.x === undefined){
+        b.writeFloatLE(n.r, 0);
+        b.writeFloatLE(n.g, 4);
+        b.writeFloatLE(n.b, 8);
+    }
+    else{
+        b.writeFloatLE(n.x, 0);
+        b.writeFloatLE(n.y, 4);
+        b.writeFloatLE(n.z, 8);
+    }
+    return b;
+}
+
+function BVec4(n){
+    let b = new Buffer(16);
+    if(n.x === undefined){
+        b.writeFloatLE(n.r, 0);
+        b.writeFloatLE(n.g, 4);
+        b.writeFloatLE(n.b, 8);
+        b.writeFloatLE(n.a, 12);
+    }
+    else{
+        b.writeFloatLE(n.x, 0);
+        b.writeFloatLE(n.y, 4);
+        b.writeFloatLE(n.z, 8);
+        b.writeFloatLE(n.w, 12);
+    }
+    return b;
+}
+
 function BString(s){
     let b = new Buffer(4 + s.length);
     b.writeUInt32LE(s.length, 0);
@@ -137,18 +175,35 @@ module.exports = class{
         {
             let obj_size = s.data.children.length;
             for (let i = 0; i < s.data.children.length; i++) {
-                if(s.data.children[i].type == "LineSegments" || s.data.children[i].type == "AmbientLight"){
+                if(s.data.children[i].type == "LineSegments" || s.data.children[i].type == "AmbientLight" || String(s.data.children[i].name).indexOf("Helper") > -1){
                     obj_size -= 1;
                 }
             }
+            
             d = BPush(d, BUint32(obj_size));
+
             let obj_save = function(obj){
                 let type = 0;
+
                 switch (obj.type) {
+
                     case "Mesh":
                         type = 1;
                         break;
                 
+                    case "PointLight":
+                        type = 2;
+                        break;
+                        
+
+                    case "SpotLight":
+                        type = 3;
+                        break;
+
+                    case "DirectionalLight":
+                        type = 4;
+                        break;
+
                     default:
                         break;
                 }
@@ -159,19 +214,16 @@ module.exports = class{
                 d = BPush(d, BUint32(0)); // display type
                 d = BPush(d, BUint32(0)); // display priority
 
-                let t = new Buffer(36);
-                t.writeFloatLE(obj.position.x, 0);
-                t.writeFloatLE(obj.position.y, 4);
-                t.writeFloatLE(obj.position.z, 8);
-                t.writeFloatLE(obj.rotation.x, 12);
-                t.writeFloatLE(obj.rotation.y, 16);
-                t.writeFloatLE(obj.rotation.z, 20);
-                t.writeFloatLE(obj.scale.x, 24);
-                t.writeFloatLE(obj.scale.y, 28);
-                t.writeFloatLE(obj.scale.z, 32);
-                d = BPush(d, t);
+                d = BPush(d, BVec3(obj.position));
+                d = BPush(d, BVec3({
+                    x: (obj.rotation.x * 180.0) / 3.14,
+                    y: (obj.rotation.y * 180.0) / 3.14,
+                    z: (obj.rotation.z * 180.0) / 3.14,
+                }));
+                d = BPush(d, BVec3(obj.scale));
 
                 switch (type) {
+
                     case 1:{
                         //armature
                         d = BPush(d, BString2("N"));
@@ -190,20 +242,56 @@ module.exports = class{
                         else{
                             d = BPush(d, BString2("N"));
                         }   
+
                         break;
                     }
                 
+                    case 2:{
+
+                        d = BPush(d, BVec3(obj.ambient));
+                        d = BPush(d, BVec3(obj.color));
+                        d = BPush(d, BVec3(obj.specular));
+
+                        let kl = 0;
+                        let kq = 0;
+                        while (true) {
+                            let tmp = (1.0 / (obj.decay + kl * obj.distance + kq * Math.pow(obj.distance, 2))) * obj.intensity;
+                            kl += 0.001;
+                            kq += 0.0001;
+                            if(tmp < 0.001){
+                                break;
+                            }
+                        }
+
+                        d = BPush(d, BFloat(obj.decay));
+                        d = BPush(d, BFloat(kl));
+                        d = BPush(d, BFloat(kq));
+
+                        break;
+                    }
+
                     default:
                         break;
                 }
 
-                d = BPush(d, BUint32(obj.children.length));
+                
+                let ch_size = obj.children.length;
                 for (let i = 0; i < obj.children.length; i++) {
+                    if(String(obj.children[i].name).indexOf("Helper") > -1){
+                        ch_size -= 1;
+                    }
+                }
+                d = BPush(d, BUint32(ch_size));
+                for (let i = 0; i < obj.children.length; i++) {
+                    if(String(obj.children[i].name).indexOf("Helper") > -1){
+                        continue;
+                    }
                     obj_save(obj.children[i]);
                 }
             }
+
             for (let i = 0; i < s.data.children.length; i++) {
-                if(s.data.children[i].type == "LineSegments" || s.data.children[i].type == "AmbientLight"){
+                if(s.data.children[i].type == "LineSegments" || s.data.children[i].type == "AmbientLight" || String(s.data.children[i].name).indexOf("Helper") > -1){
                     continue;
                 }
                 obj_save(s.data.children[i]);
@@ -212,6 +300,7 @@ module.exports = class{
  
         try {
             fs.writeFileSync(path.join(editor.dirname, editor.project.scene.file), d);
+            console.log("End Exporting");
         } catch (error) {
             console.log("Error While Exporting Scene");
             console.log(error);

@@ -41,20 +41,8 @@ function BReadString2(data, i, size){
     return s;
 }
 
-function BReadColorRGB(data, i, c){
-    if(c !== undefined){
-        c.r = BReadFloat(data, i);
-        c.g = BReadFloat(data, i);
-        c.b = BReadFloat(data, i);
-        return c;
-    }
-    else{
-        return {
-            r: BReadFloat(data, i),
-            g: BReadFloat(data, i),
-            b: BReadFloat(data, i),
-        }
-    }
+function BReadColorRGB(data, i){
+    return new THREE.Color(BReadFloat(data, i), BReadFloat(data, i), BReadFloat(data, i));
 }
 
 function BReadTexture(data, i){
@@ -356,9 +344,9 @@ module.exports = class{
                     o.position.y = BReadFloat(d, i);
                     o.position.z = BReadFloat(d, i);
 
-                    o.rotation.x = BReadFloat(d, i);
-                    o.rotation.y = BReadFloat(d, i);
-                    o.rotation.z = BReadFloat(d, i);
+                    o.rotation.x = (BReadFloat(d, i) * 3.14) / 180.0;
+                    o.rotation.y = (BReadFloat(d, i) * 3.14) / 180.0;
+                    o.rotation.z = (BReadFloat(d, i) * 3.14) / 180.0;
 
                     o.scale.x = BReadFloat(d, i);
                     o.scale.y = BReadFloat(d, i);
@@ -427,6 +415,7 @@ module.exports = class{
                             o["color"] = BReadColorRGB(d, i);
                             o["specular"] = BReadColorRGB(d, i);
 
+                            o["distance"] = 100;
                             o["decay"] = BReadFloat(d, i);
                             o["linear"] = BReadFloat(d, i);
                             o["quadratic"] = BReadFloat(d, i);

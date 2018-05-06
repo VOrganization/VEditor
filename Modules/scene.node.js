@@ -347,6 +347,9 @@ module.exports = class{
             h.name = "Helper";
             h.matrixAutoUpdate = true;
             help.add(h);
+
+            obj.castShadow = true;
+            obj.receiveShadow = true;
         }
 
         if(obj.type == "PerspectiveCamera"){
@@ -358,7 +361,7 @@ module.exports = class{
         }
 
         if(obj.type == "PointLight"){
-            let h = new THREE.PointLightHelper(obj, obj.decay);
+            let h = new THREE.Mesh( new THREE.SphereBufferGeometry( 0.3, 16, 8 ), new THREE.MeshBasicMaterial( { color: obj.color } ) );
             h.name = "Helper";
             h.matrixAutoUpdate = true;
             help.add(h);
