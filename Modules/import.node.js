@@ -415,11 +415,20 @@ module.exports = class{
                             o["color"] = BReadColorRGB(d, i);
                             o["specular"] = BReadColorRGB(d, i);
 
-                            o["distance"] = 100;
                             o["decay"] = BReadFloat(d, i);
                             o["linear"] = BReadFloat(d, i);
                             o["quadratic"] = BReadFloat(d, i);
                             
+                            o.distance = 0;
+                            while (true) {
+                                let a = 1.0 / (o.decay + o.linear * o.distance + o.quadratic * o.distance * o.distance);
+                                if(a < 0.001){
+                                    break;
+                                }
+                                o.distance += 0.1;
+                            }
+                            o.distance = Math.round(o.distance);
+
                             break;
                         }
 
