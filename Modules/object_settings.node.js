@@ -407,6 +407,69 @@ module.exports = class{
         renderFunction();
 
 
+        //Events
+        let matC = $(this.container).children(".material_settings");
+
+        //add support for selectedObject
+        matC.children(".material_header").children(".material_name").dblclick(function(){
+            let id = Number(matC.children(".material_header").children(".material_name").val());
+            matC.children(".material_header").children(".material_name").hide();
+            matC.children(".material_header").children(".material_change_name").show().focus().val(editor.project.materials[id].name);
+
+            $(document).keypress(function(e){
+                if(e.key == "Enter"){
+                    editor.project.materials[id].name = matC.children(".material_header").children(".material_change_name").val();
+                    matC.children(".material_header").children(".material_name").children('select option[value="' + id + '"]').html(editor.project.materials[id].name);
+                    matC.children(".material_header").children(".material_name").show();
+                    matC.children(".material_header").children(".material_change_name").hide();
+                }
+            });
+
+        });
+
+        matC.children(".material_options").children(".material_copy").click(function(){
+            let id = Number(matC.children(".material_header").children(".material_name").val());
+
+            let copy = editor.project.materials[id].clone();
+            copy.name += " copy";
+
+            editor.project.materials.push(copy);
+
+            matC.children(".material_header").children(".material_name").append(`<option value="` + (id + 1) + `">` + editor.project.materials[id + 1].name + `</option>`);
+            matC.children(".material_header").children(".material_name").val(id + 1);
+
+        });
+
+        matC.children(".material_options").children(".material_del").click(function(){
+            if(editor.project.materials.length == 1){
+                alert("You can't delete default material"); //convert to electron dialog
+            }
+            else{
+                //replace in objects with default
+                //remove
+            }
+        });
+
+        matC.children(".material_options").children(".material_new").click(function(){
+            let id = editor.project.materials.length;
+            editor.project.materials.push(new THREE.MeshPhongMaterial({side: THREE.DoubleSide}));
+
+            matC.children(".material_header").children(".material_name").append(`<option value="` + id + `"></option>`);
+
+            matC.children(".material_header").children(".material_name").hide();
+            matC.children(".material_header").children(".material_change_name").show().focus().val("");
+
+            $(document).keypress(function(e){
+                if(e.key == "Enter"){
+                    editor.project.materials[id].name = matC.children(".material_header").children(".material_change_name").val();
+                    matC.children(".material_header").children(".material_name").children('select option[value="' + id + '"]').html(editor.project.materials[id].name);
+                    matC.children(".material_header").children(".material_name").show();
+                    matC.children(".material_header").children(".material_change_name").hide();
+                }
+            });
+        });
+
+        //changes in materials
 
     }
 
@@ -414,12 +477,10 @@ module.exports = class{
         let t = this;
         this.container.children(".material_settings").show();
 
-        if(editor.project !== undefined){
-            this.container.children(".material_settings").children(".material_name").html("");
-            for (let i = 0; i < editor.project.materials.length; i++) {
-                let mat = editor.project.materials[i];
-                this.container.children(".material_settings").children(".material_name").html(`<option value="` + mat.name + "_" + i + `">` + mat.name + `</option>`);   
-            }
+        this.container.children(".material_settings").children(".material_header").children(".material_name").html("");
+        for (let i = 0; i < editor.project.materials.length; i++) {
+            let mat = editor.project.materials[i].name;
+            this.container.children(".material_settings").children(".material_header").children(".material_name").append(`<option value="` + i + `">` + mat + `</option>`);   
         }
 
     }

@@ -1,5 +1,17 @@
+<!-- Only for styling -->
+
+<!-- <link rel="stylesheet" href="object_settings.css">
+<link rel="stylesheet" href="../ResourcesStatic/css/style.css">
+<link rel="stylesheet" href="../Libraries/fontello/css/fontello.css">
+
+<style>
+    body{
+        background-color: var(--main-bg-color0);
+    }
+</style> -->
+
 <div class="context_settings">
-    
+
     <div class="context_settings_header">
         <div class="context_settings_header_icon">
             <img src="">
@@ -33,7 +45,19 @@
 
     <div class="context_settings_div material_settings">
         <span class="o">Material:<br><br></span>
-        <select class="material_name o"></select><br class="o">
+
+        <div class="material_header o">
+            <select class="material_name"></select>
+            <input type="text" class="material_change_name" style="display: none;">
+        </div>
+        <div class="material_options o">
+            <div class="material_copy material_option" title="copy"><span class="icon-docs"></span></div>
+            <div class="material_del material_option" title="remove"><span class="icon-cancel"></span></div>
+            <div class="material_new material_option" title="add"><span class="icon-plus"></span></div>
+            <div style="clear: both;"></div>
+        </div>
+        <br class="o">
+
         <br>
         <div class="material_viewer no-shader"></div>
         <br class="no-shader">
