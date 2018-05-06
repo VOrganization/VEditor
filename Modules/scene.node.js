@@ -122,6 +122,21 @@ module.exports = class{
         this.events();
     }
 
+    foundParent(uuid, obj){
+        for (let i = 0; i < obj.children.length; i++) {
+            if(obj.children[i].uuid == uuid){
+                return obj;
+            }
+            else{
+                let o = this.foundParent(uuid, obj.children[i]);
+                if(o !== null){
+                    return o;
+                }
+            }
+        }
+        return null;
+    }
+
     events(){
         let t = this;
 
@@ -169,7 +184,48 @@ module.exports = class{
                         t.selectedObject = null;
                     }
                     
+                    if(e.key == "d"){
+
+                        let parent = t.foundParent(t.selectedObject.uuid, t.scene);
+
+                        if(parent !== null){
+                            let o = t.selectedObject.clone();
+                            parent.add(o);
+                            CallFunctionFromModules("changeDataCallback");
+                            editor.selected = {
+                                type: "object",
+                                uuid: o.uuid
+                            };
+                        }
+                        else{
+                            console.log("Error while clone, don't found parent");
+                        }
+
+                    }
+
+                    // console.log(e);
                 }
+            }
+        });
+
+        $(document).keyup(function(e){
+            if(t.selectedObject !== null){
+
+                if(e.keyCode == 46) {
+
+                    let parent = t.foundParent(t.selectedObject.uuid, t.scene);
+
+                    if(parent !== null){
+                        parent.remove(t.selectedObject);
+                        CallFunctionFromModules("changeDataCallback");
+                        editor.selected = { type: "none" };
+                    }
+                    else{
+                        console.log("Error while delete, don't found parent");
+                    }
+
+                }
+
             }
         });
 
@@ -319,7 +375,7 @@ module.exports = class{
         }
 
         for (let i = 0; i < obj.children.length; i++) {
-            if(obj.children[i].name == "Helper"){
+            if(String(obj.children[i].name).indexOf("Helper") > -1){
                 obj.remove(obj.children[i]);
             }
         }
