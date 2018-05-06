@@ -23,7 +23,12 @@ const path = require("path");
                     found = false;
                     break;
                 }
-                container.getElement().html(obj.html);
+                if(fs.existsSync(path.join("Modules", obj.html))){
+                    container.getElement().html(fs.readFileSync(path.join("Modules", obj.html)).toString());
+                }
+                else{
+                    container.getElement().html(obj.html);
+                }
                 editor.modulesUsage.push(obj);
                 break;
             }
