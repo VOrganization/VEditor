@@ -472,6 +472,7 @@ module.exports = class{
                 if(e.key == "Enter"){
                     editor.project.materials[id].name = matC.children(".material_header").children(".material_change_name").val();
                     matC.children(".material_header").children(".material_name").children('select option[value="' + id + '"]').html(editor.project.materials[id].name);
+                    matC.children(".material_header").children(".material_name").val(id);
                     matC.children(".material_header").children(".material_name").show();
                     matC.children(".material_header").children(".material_change_name").hide();
                 }
@@ -483,21 +484,23 @@ module.exports = class{
         {
             let updateTexture = function(id, mapName){
                 if(id == NaN){
-                    mat[mapName] = null;
-                    mat.needsUpdate = true;
+                    t.materialObject.material[mapName] = null;
+                    t.materialObject.material.needsUpdate = true;
                     t.selectObject.material[mapName] = null;
                     t.selectObject.material.needsUpdate = true;
                 }
                 else{
                     if(editor.project.textures[id] !== undefined){
-                        mat[mapName] = editor.project.textures[id];
-                        mat.needsUpdate = true;
+                        t.materialObject.material[mapName] = editor.project.textures[id];
+                        t.materialObject.material.needsUpdate = true;
                         t.selectObject.material[mapName] = editor.project.textures[id];
                         t.selectObject.material.needsUpdate = true;
+                        console.log(t.materialObject.material);
+                        console.log(t.selectObject.material);
                     }
                     else{
-                        mat[mapName] = null;
-                        mat.needsUpdate = true;
+                        t.materialObject.material[mapName] = null;
+                        t.materialObject.material.needsUpdate = true;
                         t.selectObject.material[mapName] = null;
                         t.selectObject.material.needsUpdate = true;
                     }
@@ -506,7 +509,7 @@ module.exports = class{
 
             let updateData = function(data, name){
                 t.selectObject.material[name] = data;
-                mat[name] = data;
+                t.materialObject.material[name] = data;
             }
 
             matC.children(".material_opacity").change(function(){
@@ -630,10 +633,19 @@ module.exports = class{
 
     }
 
+    getTextureValue(tex){
+        for (let i = 0; i < editor.project.textures.length; i++) {
+            if(editor.project.textures[i] == tex){
+                return i;
+            }
+        }
+        return "none";
+    }
+
     setMaterial(editor){
         let t = this;
         let mat = t.selectObject.material;
-        t.materialObject.material = mat;
+        t.materialObject.material = mat.clone();
         let matC = $(this.container).children(".material_settings");
         matC.show();
 
@@ -646,14 +658,14 @@ module.exports = class{
             }
         }
 
-        matC.children(".material_map_diffuse").html(`<option>None</option>`);
-        matC.children(".material_map_roughness").html(`<option>None</option>`);
-        matC.children(".material_map_metalness").html(`<option>None</option>`);
-        matC.children(".material_map_specular").html(`<option>None</option>`);
-        matC.children(".material_map_emission").html(`<option>None</option>`);
-        matC.children(".material_bump_map").html(`<option>None</option>`);
-        matC.children(".material_normal_map").html(`<option>None</option>`);
-        matC.children(".material_ao_map").html(`<option>None</option>`);
+        matC.children(".material_map_diffuse").html(`<option value="none">None</option>`);
+        matC.children(".material_map_roughness").html(`<option value="none">None</option>`);
+        matC.children(".material_map_metalness").html(`<option value="none">None</option>`);
+        matC.children(".material_map_specular").html(`<option value="none">None</option>`);
+        matC.children(".material_map_emission").html(`<option value="none">None</option>`);
+        matC.children(".material_bump_map").html(`<option value="none">None</option>`);
+        matC.children(".material_normal_map").html(`<option value="none">None</option>`);
+        matC.children(".material_ao_map").html(`<option value="none">None</option>`);
         for (let i = 0; i < editor.project.textures.length; i++) {
             let tex = editor.project.textures[i];
             matC.children(".material_map_diffuse").append(`<option value="` + i + `">` + tex.name + `</option>`);
@@ -666,18 +678,26 @@ module.exports = class{
             matC.children(".material_ao_map").append(`<option value="` + i + `">` + tex.name + `</option>`);
         }
 
+        matC.children(".material_map_diffuse").val(t.getTextureValue(mat.map));
         matC.children(".material_color_diffuse").spectrum("set", mat.color.getHexString());
+        matC.children(".material_map_emission").val(t.getTextureValue(mat.emissiveMap));
         matC.children(".material_color_emission").spectrum("set", mat.emissive.getHexString());
         matC.children(".material_int_emission").val(mat.emissiveIntensity);
         matC.children(".material_refraction").val(mat.refractionRatio);
+        matC.children(".material_normal_map").val(t.getTextureValue(mat.normalMap));
+        matC.children(".material_bump_map").val(t.getTextureValue(mat.bumpMap));
         matC.children(".material_bump_scale").val(mat.bumpScale);
+        matC.children(".material_ao_map").val(t.getTextureValue(mat.aoMap));
         matC.children(".material_ao_int").val(mat.aoMapIntensity);
+
 
         if(mat.type == "MeshPhysicalMaterial"){
             matC.children(".phong").hide();
             matC.children(".pbr").show();
             matC.children(".material_type").val("PBR");
+            matC.children(".material_map_roughness").val(t.getTextureValue(mat.roughnessMap));
             matC.children(".material_roughness").val(mat.roughness);
+            matC.children(".material_map_metalness").val(t.getTextureValue(mat.metalnessMap));
             matC.children(".material_metalness").val(mat.metalness);
         }
         else{
@@ -686,10 +706,9 @@ module.exports = class{
             matC.children(".material_type").val("Phong");
             matC.children(".material_reflection").val(mat.reflectivity);
             matC.children(".material_color_specular").spectrum("set", mat.specular.getHexString());
+            matC.children(".material_map_specular").val(t.getTextureValue(mat.specularMap));
             matC.children(".material_shi_specular").val(mat.shininess);
         }
-
-        //textures
 
     }
 
