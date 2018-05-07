@@ -495,8 +495,6 @@ module.exports = class{
                         t.materialObject.material.needsUpdate = true;
                         t.selectObject.material[mapName] = editor.project.textures[id];
                         t.selectObject.material.needsUpdate = true;
-                        console.log(t.materialObject.material);
-                        console.log(t.selectObject.material);
                     }
                     else{
                         t.materialObject.material[mapName] = null;
@@ -510,16 +508,54 @@ module.exports = class{
             let updateData = function(data, name){
                 t.selectObject.material[name] = data;
                 t.materialObject.material[name] = data;
-            }
+            };
+
+            let objectUpdate = function(mat, newMat, obj){
+                if(obj["material"] == mat){
+                    obj["material"] = newMat;
+                }
+
+                for (let i = 0; i < obj.children.length; i++) {
+                    objectUpdate(mat, newMat, obj.children[i]);
+                }
+            };
+
+            matC.children(".material_type").change(function(){
+                let val = String($(this).val()).toLocaleLowerCase();
+                let mat = t.selectObject.material;
+                let c = THREE.MeshPhongMaterial;
+                switch (val) {
+
+                    case "phong":
+                        c = THREE.MeshPhongMaterial;
+                        break;
+                
+                    case "pbr":
+                        c = THREE.MeshPhysicalMaterial;
+                        break;
+
+                    default:
+                        break;
+                }
+
+                for (let i = 0; i < editor.project.materials.length; i++) {
+                    if(editor.project.materials[i] == mat){
+                        let newMat = new c({side: THREE.DoubleSide});
+                        newMat.name = mat.name;
+
+                        objectUpdate(mat, newMat, editor.project.scene.data);
+                        editor.project.materials[i] = newMat;
+                        t.selectObject.material = editor.project.materials[i];
+                        t.update(editor);
+                        break;
+                    }
+                }
+            });
 
             matC.children(".material_opacity").change(function(){
                 updateData(Number($(this).val()), "opacity");
                 updateData(true, "transparent");
                 updateData(true, "needsUpdate");
-            });
-
-            matC.children(".material_generate_in").change(function(){
-                updateData($(this).prop("checked"), "generate_in_shader");
             });
 
             matC.children(".material_color_diffuse").spectrum({
