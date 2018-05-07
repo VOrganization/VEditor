@@ -19,7 +19,7 @@ module.exports = class{
         
         this.container = null;
         
-        this.selectObject = { position: null, rotation: null, scale: null };
+        this.selectObject = null;
 
         this.materialRenderer = null;
         this.materialScene = null;
@@ -413,7 +413,11 @@ module.exports = class{
 
         //add support for selectedObject
         matC.children(".material_header").children(".material_name").change(function(){
-            console.log("Change selected material: " + $(this).val());
+            let id = Number($(this).val());
+            t.materialObject.material = editor.project.materials[id];
+            mat = t.materialObject.material;
+            t.selectObject.material = editor.project.materials[id];
+            t.update(editor);
         });
 
         matC.children(".material_header").children(".material_name").dblclick(function(){
@@ -476,172 +480,216 @@ module.exports = class{
 
         //changes in materials
 
-        let updateTexture = function(id, mapName){
-            if(id == NaN){
-                mat[mapName] = null;
-                mat.needsUpdate = true;
-            }
-            else{
-                if(editor.project.textures[id] !== undefined){
-                    mat[mapName] = editor.project.textures[id];
-                    mat.needsUpdate = true;
-                }
-                else{
+        {
+            let updateTexture = function(id, mapName){
+                if(id == NaN){
                     mat[mapName] = null;
                     mat.needsUpdate = true;
+                    t.selectObject.material[mapName] = null;
+                    t.selectObject.material.needsUpdate = true;
                 }
+                else{
+                    if(editor.project.textures[id] !== undefined){
+                        mat[mapName] = editor.project.textures[id];
+                        mat.needsUpdate = true;
+                        t.selectObject.material[mapName] = editor.project.textures[id];
+                        t.selectObject.material.needsUpdate = true;
+                    }
+                    else{
+                        mat[mapName] = null;
+                        mat.needsUpdate = true;
+                        t.selectObject.material[mapName] = null;
+                        t.selectObject.material.needsUpdate = true;
+                    }
+                }
+            };
+
+            let updateData = function(data, name){
+                t.selectObject.material[name] = data;
+                mat[name] = data;
             }
-        };
 
-        matC.children(".material_opacity").change(function(){
-            mat.opacity = Number($(this).val());
-            mat.transparent = true;
-            mat.needsUpdate = true;
-        });
+            matC.children(".material_opacity").change(function(){
+                updateData(Number($(this).val()), "opacity");
+                updateData(true, "transparent");
+                updateData(true, "needsUpdate");
+            });
 
-        matC.children(".material_generate_in").change(function(){
-            mat["generate_in_shader"] = $(this).prop("checked");
-        });
+            matC.children(".material_generate_in").change(function(){
+                updateData($(this).prop("checked"), "generate_in_shader");
+            });
 
-        matC.children(".material_color_diffuse").spectrum({
-            color: "#f00",
-            showButtons: false,
-            containerClassName: "pcolor0",
-            replacerClassName: "pcolor1 pp no-shader",
-            move: function(color) {
-                mat.color = new THREE.Color(color.toHexString());
-            }
-        });
+            matC.children(".material_color_diffuse").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 pp no-shader",
+                move: function(color) {
+                    updateData(new THREE.Color(color.toHexString()), "color");
+                }
+            });
 
-        matC.children(".material_map_diffuse").change(function(){
-            updateTexture(Number($(this).val()), "map");
-        });
+            matC.children(".material_map_diffuse").change(function(){
+                updateTexture(Number($(this).val()), "map");
+            });
 
-        matC.children(".material_map_roughness").change(function(){
-            updateTexture(Number($(this).val()), "roughnessMap");
-        });
+            matC.children(".material_map_roughness").change(function(){
+                updateTexture(Number($(this).val()), "roughnessMap");
+            });
 
-        matC.children(".material_roughness").change(function(){
-            mat.roughness = Number($(this).val());
-        });
+            matC.children(".material_roughness").change(function(){
+                updateData(Number($(this).val()), "roughness");
+            });
 
-        matC.children(".material_map_metalness").change(function(){
-            updateTexture(Number($(this).val()), "metalnessMap");
-        });
+            matC.children(".material_map_metalness").change(function(){
+                updateTexture(Number($(this).val()), "metalnessMap");
+            });
 
-        matC.children(".material_roughness").change(function(){
-            mat.metalness = Number($(this).val());
-        });
+            matC.children(".material_roughness").change(function(){
+                updateData(Number($(this).val()), "metalness");
+            });
 
-        matC.children(".material_color_specular").spectrum({
-            color: "#f00",
-            showButtons: false,
-            containerClassName: "pcolor0",
-            replacerClassName: "pcolor1 phong pp no-shader",
-            move: function(color) {
-                mat.specular = new THREE.Color(color.toHexString());
-            }
-        });
+            matC.children(".material_color_specular").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 phong pp no-shader",
+                move: function(color) {
+                    updateData(new THREE.Color(color.toHexString()), "specular");
+                }
+            });
 
-        matC.children(".material_map_specular").change(function(){
-            updateTexture(Number($(this).val()), "specularMap");
-        });
+            matC.children(".material_map_specular").change(function(){
+                updateTexture(Number($(this).val()), "specularMap");
+            });
 
-        matC.children(".material_shi_specular").change(function(){
-            mat.shininess = Number($(this).val());
-        });
+            matC.children(".material_shi_specular").change(function(){
+                updateData(Number($(this).val()), "shininess");
+            });
 
-        matC.children(".material_color_emission").spectrum({
-            color: "#f00",
-            showButtons: false,
-            containerClassName: "pcolor0",
-            replacerClassName: "pcolor1 pp no-shader",
-            move: function(color) {
-                mat.emissive = new THREE.Color(color.toHexString());
-            }
-        });
+            matC.children(".material_color_emission").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 pp no-shader",
+                move: function(color) {
+                    updateData(new THREE.Color(color.toHexString()), "emissive");
+                }
+            });
 
-        matC.children(".material_map_emission").change(function(){
-            updateTexture(Number($(this).val()), "emissiveMap");
-        });
+            matC.children(".material_map_emission").change(function(){
+                updateTexture(Number($(this).val()), "emissiveMap");
+            });
 
-        matC.children(".material_int_emission").change(function(){
-            mat.emissiveIntensity = Number($(this).val());
-        });
+            matC.children(".material_int_emission").change(function(){
+                updateData(Number($(this).val()), "emissiveIntensity");
+            });
 
-        matC.children(".material_reflection").change(function(){
-            mat.reflectivity = Number($(this).val());
-        });
+            matC.children(".material_reflection").change(function(){
+                updateData(Number($(this).val()), "reflectivity");
+            });
 
-        matC.children(".material_refraction").change(function(){
-            mat.refractionRatio = Number($(this).val());
-        });
+            matC.children(".material_refraction").change(function(){
+                updateData(Number($(this).val()), "refractionRatio");
+            });
 
-        matC.children(".material_dynamic_cube").change(function(){
-            let v = $(this).val();
-            if(v == "Scene"){
-               mat["dynamic_cube"] = 0;
-            }
-            else if(v == "Single"){
-                mat["dynamic_cube"] = 1;
-            }
-            else{
-                mat["dynamic_cube"] = -1;
-            }
-        });
+            matC.children(".material_dynamic_cube").change(function(){
+                let v = $(this).val();
+                if(v == "Scene"){
+                mat["dynamic_cube"] = 0;
+                }
+                else if(v == "Single"){
+                    mat["dynamic_cube"] = 1;
+                }
+                else{
+                    mat["dynamic_cube"] = -1;
+                }
+            });
 
-        matC.children(".material_normal_map").change(function(){
-            updateTexture(Number($(this).val()), "normalMap");
-        });
+            matC.children(".material_normal_map").change(function(){
+                updateTexture(Number($(this).val()), "normalMap");
+            });
 
-        matC.children(".material_bump_map").change(function(){
-            updateTexture(Number($(this).val()), "bumpMap");
-        });
+            matC.children(".material_bump_map").change(function(){
+                updateTexture(Number($(this).val()), "bumpMap");
+            });
 
-        matC.children(".material_bump_scale").change(function(){
-            mat.bumpScale = Number($(this).val());
-        });
+            matC.children(".material_bump_scale").change(function(){
+                updateData(Number($(this).val()), "bumpScale");
+            });
 
-        matC.children(".material_ao_map").change(function(){
-            updateTexture(Number($(this).val()), "aoMap");
-        });
+            matC.children(".material_ao_map").change(function(){
+                updateTexture(Number($(this).val()), "aoMap");
+            });
 
-        matC.children(".material_ao_int").change(function(){
-            mat.aoMapIntensity = Number($(this).val());
-        });        
+            matC.children(".material_ao_int").change(function(){
+                updateData(Number($(this).val()), "aoMapIntensity");
+            });        
+
+        }
 
     }
 
     setMaterial(editor){
         let t = this;
-        let C = $(this.container).children(".material_settings");
-        C.show();
+        let mat = t.selectObject.material;
+        t.materialObject.material = mat;
+        let matC = $(this.container).children(".material_settings");
+        matC.show();
 
-        C.children(".material_header").children(".material_name").html("");
+        matC.children(".material_header").children(".material_name").html("");
         for (let i = 0; i < editor.project.materials.length; i++) {
-            let mat = editor.project.materials[i].name;
-           C.children(".material_header").children(".material_name").append(`<option value="` + i + `">` + mat + `</option>`);   
+            let _mat = editor.project.materials[i].name;
+            matC.children(".material_header").children(".material_name").append(`<option value="` + i + `">` + _mat + `</option>`);   
+            if(editor.project.materials[i] == mat){
+                matC.children(".material_header").children(".material_name").val(i);
+            }
         }
 
-        C.children(".material_map_diffuse").html(`<option>None</option>`);
-        C.children(".material_map_roughness").html(`<option>None</option>`);
-        C.children(".material_map_metalness").html(`<option>None</option>`);
-        C.children(".material_map_specular").html(`<option>None</option>`);
-        C.children(".material_map_emission").html(`<option>None</option>`);
-        C.children(".material_bump_map").html(`<option>None</option>`);
-        C.children(".material_normal_map").html(`<option>None</option>`);
-        C.children(".material_ao_map").html(`<option>None</option>`);
+        matC.children(".material_map_diffuse").html(`<option>None</option>`);
+        matC.children(".material_map_roughness").html(`<option>None</option>`);
+        matC.children(".material_map_metalness").html(`<option>None</option>`);
+        matC.children(".material_map_specular").html(`<option>None</option>`);
+        matC.children(".material_map_emission").html(`<option>None</option>`);
+        matC.children(".material_bump_map").html(`<option>None</option>`);
+        matC.children(".material_normal_map").html(`<option>None</option>`);
+        matC.children(".material_ao_map").html(`<option>None</option>`);
         for (let i = 0; i < editor.project.textures.length; i++) {
             let tex = editor.project.textures[i];
-            C.children(".material_map_diffuse").append(`<option value="` + i + `">` + tex.name + `</option>`);
-            C.children(".material_map_roughness").append(`<option value="` + i + `">` + tex.name + `</option>`);
-            C.children(".material_map_metalness").append(`<option value="` + i + `">` + tex.name + `</option>`);
-            C.children(".material_map_specular").append(`<option value="` + i + `">` + tex.name + `</option>`);
-            C.children(".material_map_emission").append(`<option value="` + i + `">` + tex.name + `</option>`);
-            C.children(".material_bump_map").append(`<option value="` + i + `">` + tex.name + `</option>`);
-            C.children(".material_normal_map").append(`<option value="` + i + `">` + tex.name + `</option>`);
-            C.children(".material_ao_map").append(`<option value="` + i + `">` + tex.name + `</option>`);
+            matC.children(".material_map_diffuse").append(`<option value="` + i + `">` + tex.name + `</option>`);
+            matC.children(".material_map_roughness").append(`<option value="` + i + `">` + tex.name + `</option>`);
+            matC.children(".material_map_metalness").append(`<option value="` + i + `">` + tex.name + `</option>`);
+            matC.children(".material_map_specular").append(`<option value="` + i + `">` + tex.name + `</option>`);
+            matC.children(".material_map_emission").append(`<option value="` + i + `">` + tex.name + `</option>`);
+            matC.children(".material_bump_map").append(`<option value="` + i + `">` + tex.name + `</option>`);
+            matC.children(".material_normal_map").append(`<option value="` + i + `">` + tex.name + `</option>`);
+            matC.children(".material_ao_map").append(`<option value="` + i + `">` + tex.name + `</option>`);
         }
+
+        matC.children(".material_color_diffuse").spectrum("set", mat.color.getHexString());
+        matC.children(".material_color_emission").spectrum("set", mat.emissive.getHexString());
+        matC.children(".material_int_emission").val(mat.emissiveIntensity);
+        matC.children(".material_refraction").val(mat.refractionRatio);
+        matC.children(".material_bump_scale").val(mat.bumpScale);
+        matC.children(".material_ao_int").val(mat.aoMapIntensity);
+
+        if(mat.type == "MeshPhysicalMaterial"){
+            matC.children(".phong").hide();
+            matC.children(".pbr").show();
+            matC.children(".material_type").val("PBR");
+            matC.children(".material_roughness").val(mat.roughness);
+            matC.children(".material_metalness").val(mat.metalness);
+        }
+        else{
+            matC.children(".phong").show();
+            matC.children(".pbr").hide();
+            matC.children(".material_type").val("Phong");
+            matC.children(".material_reflection").val(mat.reflectivity);
+            matC.children(".material_color_specular").spectrum("set", mat.specular.getHexString());
+            matC.children(".material_shi_specular").val(mat.shininess);
+        }
+
+        //textures
 
     }
 
