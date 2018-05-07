@@ -50,6 +50,9 @@ module.exports = class{
             let tmp_materials = editor.project.materials;
             editor.project.materials = [];
 
+            let tmp_textures = editor.project.textures;
+            editor.project.textures = [];
+
             let files_tmp = new Array();
             for (let i = 0; i < editor.project.files.length; i++) {
                 files_tmp.push(editor.project.files[i].data);
@@ -69,6 +72,8 @@ module.exports = class{
             editor.project.meshes = tmp_meshes;
 
             editor.project.materials = tmp_materials;
+
+            editor.project.textures = tmp_textures;
 
         } catch (error) {
             console.log("Error While Save Project");

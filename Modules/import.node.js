@@ -170,6 +170,8 @@ module.exports = class{
                     
                         case "image":{
                             f.data = new THREE.TextureLoader().load(path.join(editor.dirname, f.path));
+                            f.data.name = f.name;
+                            editor.project.textures.push(f.data);
                             break;
                         }
 
