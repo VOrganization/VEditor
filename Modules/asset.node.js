@@ -20,6 +20,7 @@ module.exports = class{
 
         this.loadCallback = this.Update;
         this.selectCallback = this.SelectUpdate;
+        this.changeDataCallback = this.scanDir;
     }
 
     destroy() {
@@ -68,15 +69,22 @@ module.exports = class{
                                 if(!fs.existsSync(path.join(editor.dirname, editor.project.files[j].path))){
                                     editor.project.files.splice(j, 1);
                                 }
+
+                                if(editor.project.files[j].type === "" || editor.project.files[j].type === null){
+                                    editor.project.files[j].type = findFileType(editor.project.files[j].ext);
+                                }
+
+                                if(editor.project.files[j].data == null || editor.project.files[j].data == undefined){
+                                    loadFile(editor.project.files[j]);
+                                }
+
                                 if(editor.project.files[j].path == main_p){
                                     found = true;
                                     break;
                                 }
-                                if(editor.project.files[j].type === "" || editor.project.files[j].type === null){
-                                    editor.project.files[j].type = findFileType(editor.project.files[j].ext);
-                                }
                             }
                             if(!found){
+                                alert("OK");
                                 editor.project.files.push({
                                     type: type,
                                     name: name,
@@ -84,6 +92,8 @@ module.exports = class{
                                     path: main_p,
                                     data: null
                                 });
+                                console.log("Laduje2");
+                                loadFile(editor.project.files[editor.project.files.length - 1]);
                             }
                         }
                     }
@@ -129,7 +139,7 @@ module.exports = class{
         }
 
         for (let i = 0; i < list.length; i++) {
-            let p = path.join(editor.dirname, list[i]);
+            let p = path.join(editor.dirname, this.calcPath(), list[i]);
             
             if(p == editor.filename){
                 continue;

@@ -176,6 +176,7 @@ module.exports = class{
                         }
 
                         default:{
+                            f.data = null;
                             break;
                         }
                     }

@@ -94,3 +94,27 @@ function LoadModel(p, fun){
         }
     }
 }
+
+function loadFile(f){
+    switch (f.type) {
+
+        case "model":{
+            LoadModel(path.join(editor.dirname, f.path), function(d){
+                f.data = d;
+            });
+            break;
+        }
+    
+        case "image":{
+            f.data = new THREE.TextureLoader().load(path.join(editor.dirname, f.path));
+            f.data.name = f.name;
+            editor.project.textures.push(f.data);
+            console.log(f.data);
+            break;
+        }
+
+        default:{
+            break;
+        }
+    }
+}
