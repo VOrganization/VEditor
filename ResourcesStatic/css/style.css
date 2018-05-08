@@ -3,8 +3,8 @@ body{
     --main-bg-color0: #222222;
     --main-bg-color1: #272727;
     --main-separator-solor: #424242;
-    --main-element-color0: #444444;
-    --main-element-color1: #2d2d2d;
+    --main-element-color0: #353535;
+    --main-element-color1: #212121;
     --main-font-color0: #dcdcdc;
     --main-font-color1: #77a3d0;
     --main-font-shadow: #353535;
@@ -12,7 +12,7 @@ body{
     --interactive-color: #154c9c;
 
     --input-color0: #c5c5c5;
-    --input-color1: #252525;
+    --input-color1: #202020;
 }
 
 ::-webkit-scrollbar-track{

@@ -1,5 +1,5 @@
 {
-  "name": "VEditor",
+  "name": "veditor",
   "version": "1.0.0",
   "description": "Editor for VEngine",
   "main": "app.js",

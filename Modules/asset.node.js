@@ -84,7 +84,6 @@ module.exports = class{
                                 }
                             }
                             if(!found){
-                                alert("OK");
                                 editor.project.files.push({
                                     type: type,
                                     name: name,
@@ -92,7 +91,6 @@ module.exports = class{
                                     path: main_p,
                                     data: null
                                 });
-                                console.log("Laduje2");
                                 loadFile(editor.project.files[editor.project.files.length - 1]);
                             }
                         }
@@ -168,18 +166,9 @@ module.exports = class{
                 c.Update(editor);
             }
             else{
-                // let pp = path.relative(editor.dirname, p);
-                // let f = null;
-                // for (let i = 0; i < editor.project.files.length; i++) {
-                //     if(editor.project.files[i].path == pp){
-                //         f = editor.project.files[i];
-                //         break;
-                //     }
-                // }
                 editor.selected = {
                     type: "file",
                     filename: p,
-                    //file: f
                 }
             }
         });

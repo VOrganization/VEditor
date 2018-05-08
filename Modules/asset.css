@@ -11,9 +11,7 @@
 .context_asset_header{
     width: 100%;
     padding: 6px;
-    /* background: linear-gradient(to bottom, var(--main-bg-color0) 0%, var(--main-bg-color1) 100%); */
     color: var(--main-font-color0);
-    border-bottom: 2px solid var(--main-separator-solor);
     box-sizing: border-box;
     padding-left: 10px;
     font-size: 18px;
@@ -30,50 +28,41 @@
 }
 
 .context_asset_data{
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    align-content: flex-start;
-    align-items: flex-start;
-    padding-top: 5px;
-    max-width: 100%;
-    max-height: 100%;
+    max-height: calc(100% - 34px);
+    overflow: auto;
 }
 
 .context_asset_item{
-    border: 1px solid var(--main-separator-solor);
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 5px;
     background-color: var(--main-element-color0);
-    text-align: center;
-    padding-top: 5px;
-    margin: 5px;
     color: var(--main-font-color0);
-    text-shadow: 0 0 1px var(--main-font-shadow);
+    padding: 6px;
+    box-sizing: border-box;
     transition: all 0.2s ease-in-out;
 }
 
 .context_asset_item:hover{
     cursor: pointer;
-    background-color: var(--main-element-color1);
+    background-color: var(--interactive-color);
 }
 
 .context_asset_item:first-child{
-    margin-left: 10px;
+    margin-top: 10px;
+}
+
+.context_asset_item:last-child{
+    margin-bottom: 10px;
 }
 
 .context_asset_item_icon{
     font-size: #fff;
-    font-size: 30px;
+    float: left;
 }
 
 .context_asset_item_name{
-    font-size: 14px;
-    margin-top: 5px;
-    background-color: var(--main-element-color1);
     letter-spacing: 1px;
-    padding: 3px;
 }
 
 .context_asset_item_selected{

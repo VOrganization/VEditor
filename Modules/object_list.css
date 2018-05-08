@@ -44,5 +44,5 @@
 }
 
 .object_list_item_select > .object_list_name{
-   color: var(--main-font-color1);
+   color: var(--interactive-color);
 }

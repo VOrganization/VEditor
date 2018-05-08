@@ -387,13 +387,13 @@ module.exports = class{
         this.materialRenderer.setSize( 200, 200 );
         this.container.children(".material_settings").children(".material_viewer").append(this.materialRenderer.domElement);
         
-        this.materialObject = new THREE.Mesh(new THREE.SphereGeometry(2.5, 64, 64), new THREE.MeshPhongMaterial({color: new THREE.Color(0xffffff)}));
+        this.materialObject = new THREE.Mesh(new THREE.SphereGeometry(2.5, 128, 128), new THREE.MeshPhongMaterial({color: new THREE.Color(0xffffff)}));
         
         let light = new THREE.DirectionalLight(0xffffff, 0.5);
         light.position.z = 4;
 
         let camera = new THREE.PerspectiveCamera( 75, 1, 0.1, 10000 );
-        camera.position.z = 5.5;
+        camera.position.z = 4.2;
 
         this.materialScene = new THREE.Scene();
         this.materialScene.add(this.materialObject);
