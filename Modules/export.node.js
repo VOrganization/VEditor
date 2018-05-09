@@ -69,6 +69,19 @@ function BString2(s){
     return b;
 }
 
+function BTexture(tex){
+    let b = new Buffer(0);
+    if(tex !== null && tex !== undefined && tex.EID !== undefined){
+        b = BPush(b, BString2("O"));
+        b = BPush(b, BUint8(1));
+        b = BPush(b, BString2(tex.EID));
+    }
+    else{
+        b = BPush(b, BString2("N"));
+    }
+    return b;
+}
+
 module.exports = class{
     constructor(){
         this.type = "calculation";
@@ -163,7 +176,68 @@ module.exports = class{
         d = BPush(d, BUint32(0));
 
         //Materials
-        d = BPush(d, BUint32(0));
+        d = BPush(d, BUint32(editor.project.materials.length));
+        for (let i = 0; i < editor.project.materials.length; i++) {
+            let mat = editor.project.materials[i];
+
+            d = BPush(d, BUint8(0));//inside
+
+            if(mat.type == "MeshPhysicalMaterial"){
+                d = BPush(d, BUint32(1));
+            }
+            else{
+                d = BPush(d, BUint32(0));
+            }
+            d = BPush(d, BString(mat.name));
+            d = BPush(d, BString2(require("crypto").createHash("md5").update(mat.uuid).digest("hex")));
+
+            d = BPush(d, BFloat(mat.opacity));
+
+            d = BPush(d, BVec4(mat.color));
+            d = BPush(d, BTexture(mat.map));
+
+            if(mat.type == "MeshPhongMaterial"){
+                d = BPush(d, BVec4(mat.specular));
+                d = BPush(d, BFloat(mat.shininess));
+                d = BPush(d, BTexture(mat.specularMap));
+            }
+            
+            d = BPush(d, BVec4(mat.emissive));
+            d = BPush(d, BTexture(mat.emissiveMap));
+
+            if(mat.type == "MeshPhysicalMaterial"){
+
+                // if (this->type == 1) {
+                //     f->read((char*)&this->roughness, 4);
+                //     f->read(&cc, 1);
+                //     if (cc == 'O') {
+                //         this->roughnessMap = new Texture_2D(f);
+                //     }
+                //     f->read((char*)&this->metalic, 4);
+                //     f->read(&cc, 1);
+                //     if (cc == 'O') {
+                //         this->metalicMap = new Texture_2D(f);
+                //     }
+                // }
+            }
+
+            d = BPush(d, BTexture(mat.bumpMap));
+            d = BPush(d, BFloat(mat.bumpScale));
+
+            d = BPush(d, BTexture(mat.normalMap));
+
+            d = BPush(d, BTexture(mat.aoMap));
+            d = BPush(d, BFloat(mat.aoMapIntensity));
+
+            d = BPush(d, BFloat(mat.reflectivity));
+            d = BPush(d, BFloat(mat.refractionRatio));
+            d = BPush(d, BUint8(0));
+
+            d = BPush(d, BUint32(0));
+            d = BPush(d, BUint32(0));
+            d = BPush(d, BUint32(0));
+
+        }
 
         //Renderers
         d = BPush(d, BUint32(0));

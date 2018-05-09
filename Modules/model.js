@@ -33,12 +33,22 @@ let modelLoaders = [
 function LoadModel(p, fun){
     const path = require("path");
 
+    let calc_mat = function(obj){
+        if(obj.type == "Mesh"){
+            obj.material = editor.project.materials[0];
+        }
+        for (let i = 0; i < obj.children.length; i++) {
+            calc_mat(obj.children[i]);
+        }
+    }
+
     let f = null;
     if(editor.project !== null){
         for (let i = 0; i < editor.project.files.length; i++) {
             if(editor.project.files[i].path == path.relative(editor.dirname, p)){
                 f = editor.project.files[i];
                 if(f.data !== null && f.data !== undefined){
+                    calc_mat(f.data);
                     fun(f.data);
                     return;
                 }
@@ -109,7 +119,6 @@ function loadFile(f){
             f.data = new THREE.TextureLoader().load(path.join(editor.dirname, f.path));
             f.data.name = f.name;
             editor.project.textures.push(f.data);
-            console.log(f.data);
             break;
         }
 

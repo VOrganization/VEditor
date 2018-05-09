@@ -46,9 +46,16 @@ function BReadColorRGB(data, i){
 }
 
 function BReadTexture(data, i){
-    if(BReadString2(data, i, 1) == "O"){
+    let is = BReadString2(data, i, 1);
+    if(is == "O"){
         if(BReadUint8(data, i) == 1){
-            let h = BReadString2(data, i, 32);
+            let hash = BReadString2(data, i, 32);
+            for (let i = 0; i < editor.project.textures.length; i++) {
+                let tex = editor.project.textures[i];
+                if(tex.EID == hash){
+                    return tex;
+                }
+            }
             return null;
         }
         else{
@@ -98,16 +105,13 @@ module.exports = class{
 
         let defaultMaterial = new THREE.MeshPhongMaterial({side: THREE.DoubleSide});
         defaultMaterial.name = "defaultMaterial";
-        let found = false;
+        let dm_found = false;
         for (let j = 0; j < editor.project.materials.length; j++) {
             if(editor.project.materials[j].name == "defaultMaterial"){
-                found = true;
+                dm_found = true;
                 defaultMaterial = editor.project.materials[j];
                 break;
             }
-        }
-        if(!found){
-            editor.project.materials.push(defaultMaterial);
         }
 
         //header
@@ -121,6 +125,7 @@ module.exports = class{
         //Files
         {
             let f_size = BReadUint32(d, i);
+            console.log("Files: " + f_size);
             let file_loadings = Array();
             for (let j = 0; j < f_size; j++) {
                 let name = BReadString(d, i);
@@ -151,6 +156,8 @@ module.exports = class{
                         f = editor.project.files[editor.project.files.length - 1];
                     }
                 }
+                
+                let hash = BReadString2(d, i, 32);
 
                 if(f !== null && f.data === null){
                     if(f.type === null){
@@ -171,6 +178,8 @@ module.exports = class{
                         case "image":{
                             f.data = new THREE.TextureLoader().load(path.join(editor.dirname, f.path));
                             f.data.name = f.name;
+                            f.data["path"] = f.path;
+                            f.data["EID"] = hash;
                             editor.project.textures.push(f.data);
                             break;
                         }
@@ -182,7 +191,6 @@ module.exports = class{
                     }
                 }
 
-                let hash = BReadString2(d, i, 32);
             }
 
             let wait = function(){
@@ -209,41 +217,49 @@ module.exports = class{
             //models
             {
                 let size = BReadUint32(d, i);
+                console.log("Models: " + size);
             }
 
             //Meshes
             {
                 let size = BReadUint32(d, i);
+                console.log("Meshes: " + size);
             }
 
             //Armatures
             {
                 let size = BReadUint32(d, i);
+                console.log("Armatures: " + size);
             }
 
             //Animations
             {
                 let size = BReadUint32(d, i);
+                console.log("Animations: " + size);
             }
 
             //Animation Systems
             {
                 let size = BReadUint32(d, i);
+                console.log("Animation Systems: " + size);
             }
 
             //Shaders
             {
                 let size = BReadUint32(d, i);
+                console.log("Shaders: " + size);
             }
 
             //Textures
             {
                 let size = BReadUint32(d, i);
+                console.log("Textures: " + size);
             }
 
             //Materials
             {
                 let size = BReadUint32(d, i);
+                console.log("Materials: " + size);
                 for (let j = 0; j < size; j++) {
                     if(BReadUint8(d, i) == 1){
                         BReadString2(d, i, 32); //get hash for no craching
@@ -256,30 +272,32 @@ module.exports = class{
                         }
 
                         mat.name = BReadString(d, i);
+                        console.log("Name: " + mat.name);
                         mat["EID"] = BReadString2(d, i, 32);
+                        console.log("EID: " + mat.EID);
 
                         mat.opacity = BReadFloat(d, i);
-
                         mat.color.r = BReadFloat(d, i);
                         mat.color.g = BReadFloat(d, i);
                         mat.color.b = BReadFloat(d, i);
-                        mat.color["a"] = BReadFloat(d, i);
+                        BReadFloat(d, i);
                         mat.map = BReadTexture(d, i);
 
                         if(type == 0){
                             mat.specular.r = BReadFloat(d, i);
                             mat.specular.g = BReadFloat(d, i);
                             mat.specular.b = BReadFloat(d, i);
-                            mat.specular["a"] = BReadFloat(d, i);
+                            BReadFloat(d, i);
                             mat.shininess = BReadFloat(d, i);
                             mat.specularMap = BReadTexture(d, i);
-                        }
-                        
+                        }     
+
                         mat.emissive.r = BReadFloat(d, i);
                         mat.emissive.g = BReadFloat(d, i);
                         mat.emissive.b = BReadFloat(d, i);
-                        mat.emissive["a"] = BReadFloat(d, i);
+                        BReadFloat(d, i);
                         mat.emissiveMap = BReadTexture(d, i);
+
 
                         if(type == 1){
                             console.log("OJ");
@@ -305,24 +323,35 @@ module.exports = class{
                         editor.project.materials.push(mat);
                     }
                 }
+
+                if(!dm_found && editor.project.materials.length > 0){
+                    defaultMaterial = editor.project.materials[0];
+                }
+                else{
+                    editor.project.materials.push(defaultMaterial);
+                }
             }
 
             //Renderers
             {
                 let size = BReadUint32(d, i);
+                console.log("Renderer: " + size);
             }
 
             //Scripts
             {
                 let size = BReadUint32(d, i);
+                console.log("Scripts: " + size);
             }
 
             //Objects
             {
                 let size = BReadUint32(d, i);
+                console.log("Objects: " + size);
                 let load_obj = function(){
                     let o = null;
                     let type = BReadUint32(d, i);
+
                     switch (type) {
                         case 1:{
                             o = new THREE.Mesh();

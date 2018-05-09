@@ -73,6 +73,7 @@ module.exports = class{
                                 settings: null,
                             }
                             CallFunctionFromModules("exportCallback", t);
+                            CallFunctionFromModules("changeDataCallback");
                         }
                     });
                 }
