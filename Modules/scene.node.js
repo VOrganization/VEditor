@@ -18,7 +18,7 @@ module.exports = class{
         this.type = "display";
         this.name = "scene";
         this.containerName = "context_scene";
-        this.html = `<div class="context_scene" style="width: 100%; height: 100%;"></div>`;
+        this.html = `<div class="context_scene" style="width: 100%; height: 100%; user-select: none;"></div>`;
 
         this.loadCallback = this.initData;
         this.changeDataCallback = this.updateData;
@@ -151,6 +151,10 @@ module.exports = class{
         let option = "";
 
         $(document).keypress(function(e){
+            if(!$(t.container).is(":hover")){
+                return;
+            }
+
             if(t.selectedObject !== null){
                 if(keyPress > 3){
                     option = e.key;
@@ -204,12 +208,15 @@ module.exports = class{
 
                     }
 
-                    // console.log(e);
                 }
             }
         });
 
         $(document).keyup(function(e){
+            if(!$(t.container).is(":hover")){
+                return;
+            }
+
             if(t.selectedObject !== null){
 
                 if(e.keyCode == 46) {
@@ -268,10 +275,15 @@ module.exports = class{
                             }
                            
                             if(id !== undefined){
-                                t.editor.selected = {
-                                    type: "object",
-                                    uuid: id, 
-                                };
+                                if(t.editor.selected !== null && t.editor.selected.uuid == id){
+                                    t.editor.selected = { type: "none" };
+                                }
+                                else{
+                                    t.editor.selected = {
+                                        type: "object",
+                                        uuid: id, 
+                                    };
+                                }
                                 break;
                             }
                         }
