@@ -29,6 +29,10 @@ body{
 	border: 1px solid var(--main-font-shadow);
 }
 
+img{
+    user-select: none;
+}
+
 input, select{
     border: none;
     color: var(--input-color0);

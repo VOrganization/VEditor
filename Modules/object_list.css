@@ -5,6 +5,32 @@
     overflow: auto;
 }
 
+.context_object_list > .context_menu{
+    display: none;
+    position: absolute;
+    background-color: var(--main-element-color0);
+    color: var(--main-font-color0);
+    border: 1px solid var(--main-element-color1);
+    border-radius: 2px;
+}
+
+.context_object_list > .context_menu > ul{
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+.context_object_list > .context_menu > ul > li{
+    transition: all 0.2s ease-in-out;
+    padding: 6px 30px 6px 30px;
+    text-align: center;
+}
+
+.context_object_list > .context_menu > ul > li:hover{
+    cursor: pointer;
+    background-color: var(--main-element-color1);
+}
+
 .context_object_list > ul.context{
     display: block;
     overflow: auto;
@@ -34,13 +60,19 @@
 }
 
 .object_list_name{
+    width: calc(100% - 18px);
     margin-left: 3px;
     transition: all 0.2s ease-in-out;
 }
 
 .object_list_name:hover{
     cursor: pointer;
-    opacity: 0.5;
+    color: var(--interactive-color);
+}
+
+.object_list_rename{
+    width: 100%;
+    background-color: var(--main-element-color0);
 }
 
 .object_list_item_select > .object_list_name{
