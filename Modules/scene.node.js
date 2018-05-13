@@ -99,9 +99,22 @@ module.exports = class{
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x222222);
         
-        // let grid = new THREE.GridHelper(100, 100, 0xffffff, 0x888888);
-        // grid.name = "Grid";
-        // this.scene.add(grid);
+
+        let calcObject = function(obj){
+
+            if(obj.type == "SpotLight" || obj.type == "DirectionalLight"){
+                let matrix = new THREE.Matrix4();
+                matrix = matrix.extractRotation(obj.matrix);
+                let dir = new THREE.Vector3(0, -1, 0).applyMatrix4(matrix);
+                obj.target.position.set(dir.x, dir.y, dir.z);
+                obj.target.name = "Helper";
+                t.scene.add(obj.target);
+            }
+
+            for (let i = 0; i < obj.children.length; i++) {
+                calcObject(obj.children[i]);
+            }
+        };
 
         let renderFunction = function(){
             requestAnimationFrame(renderFunction);
@@ -109,6 +122,8 @@ module.exports = class{
             t.scene.rotation.x = t.rotation.x;
             t.scene.rotation.y = t.rotation.y;
             t.scene.rotation.z = t.rotation.z;
+
+            calcObject(t.scene);
 
 			t.renderer.render(t.scene, t.camera);
         }
@@ -337,7 +352,7 @@ module.exports = class{
                     d = {
                         x: (e.pageY - startMouseY) * m,
                         y: (e.pageX - startMouseX) * m,
-                        z: 0, 
+                        z: r, 
                     }
                 }
 
@@ -430,21 +445,14 @@ module.exports = class{
         }
 
         if(obj.type == "PointLight"){
-            let h = new THREE.Mesh( new THREE.SphereBufferGeometry( 0.3, 16, 8 ), new THREE.MeshBasicMaterial( { color: obj.color } ) );
+            let h = new THREE.Mesh(new THREE.SphereBufferGeometry( 0.3, 16, 8 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
             h.name = "Helper";
             h.matrixAutoUpdate = true;
             help.add(h);
         }
 
         if(obj.type == "DirectionalLight"){
-            let h = new THREE.DirectionalLightHelper(obj, 5);
-            h.name = "Helper";
-            h.matrixAutoUpdate = true;
-            help.add(h);
-        }
-
-        if(obj.type == "SpotLight"){
-            let h = new THREE.SpotLightHelper(obj);
+            let h = new THREE.Mesh(new THREE.BoxBufferGeometry( 5, 0.01, 5 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
             h.name = "Helper";
             h.matrixAutoUpdate = true;
             help.add(h);
@@ -492,21 +500,36 @@ module.exports = class{
 
         if(String(obj.name).indexOf("Helper") > -1){
             if(obj.EID == uuid){
-                obj.material.color.r = 0;
-                obj.material.color.g = 0;
-                obj.material.color.b = 1;    
-                ch = true;
-            }
-            else{
-                if(t){
+                if(obj.material !== undefined){
                     obj.material.color.r = 0;
                     obj.material.color.g = 0;
                     obj.material.color.b = 1;
                 }
+                ch = true;
+            }
+            else{
+                if(t){
+                    if(obj.material !== undefined){
+                        obj.material.color.r = 0;
+                        obj.material.color.g = 0;
+                        obj.material.color.b = 1;
+                    }
+                }
                 else{
-                    obj.material.color.r = 1;
-                    obj.material.color.g = 1;
-                    obj.material.color.b = 0;
+                    if(obj.parent.parent !== null && String(obj.parent.parent.type).indexOf("Light") > -1){
+                        if(obj.material !== undefined){
+                            obj.material.color.r = obj.parent.parent.color.r;
+                            obj.material.color.g = obj.parent.parent.color.g;
+                            obj.material.color.b = obj.parent.parent.color.b;
+                        }
+                    }
+                    else{
+                        if(obj.material !== undefined){
+                            obj.material.color.r = 1;
+                            obj.material.color.g = 1;
+                            obj.material.color.b = 0;
+                        }
+                    }
                 }
             }
         }

@@ -193,24 +193,32 @@ WebContext.openDevTools(); //tymczasowo
                 {
                     label: "Light Spot",
                     click(){
-                        // let l = new THREE.SpotLight( 0xffffff );
-                        // l.name = "Light Spot";
-                        // l["ambient"] = new THREE.Color(0x222222);
-                        // l["specular"] = new THREE.Color(0xffffff);
-                        // l.distance = 100;
-                        // editor_data.data.object.push(l);
-                        // editor_update_data();
+                        let l = new THREE.SpotLight( 0xffffff );
+                        l.name = "Light Spot";
+                        l["ambient"] = new THREE.Color(0x222222);
+                        l["specular"] = new THREE.Color(0xffffff);
+                        l.distance = 100;
+                        editor.project.scene.data.add(l);
+                        CallFunctionFromModules("changeDataCallback");
+                        editor.selected = {
+                            type: "object",
+                            uuid: l.uuid
+                        };
                     }
                 },
                 {
                     label: "Light Dir",
                     click(){
-                        // let l = new THREE.DirectionalLight(0xFFFFFF);
-                        // l.name = "Light Dir";
-                        // l["ambient"] = new THREE.Color(0x222222);
-                        // l["specular"] = new THREE.Color(0xffffff);
-                        // editor_data.data.object.push(l);
-                        // editor_update_data();
+                        let l = new THREE.DirectionalLight(0xffffff);
+                        l.name = "Light Dir";
+                        l["ambient"] = new THREE.Color(0x222222);
+                        l["specular"] = new THREE.Color(0xffffff);
+                        editor.project.scene.data.add(l);
+                        CallFunctionFromModules("changeDataCallback");
+                        editor.selected = {
+                            type: "object",
+                            uuid: l.uuid
+                        };
                     }
                 },
                 {
