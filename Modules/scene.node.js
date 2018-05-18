@@ -27,6 +27,7 @@ module.exports = class{
         this.container = null;
         this.renderer = null;
         this.camera = null;
+        this.pCamera = null;
         this.scene = null;
         this.raycaster = null;
         this.mouse = null;
@@ -111,6 +112,10 @@ module.exports = class{
                 t.scene.add(obj.target);
             }
 
+            if(String(obj.type).indexOf("Camera") > -1){
+                obj.aspect = t.container.width() / t.container.height();
+            }
+
             for (let i = 0; i < obj.children.length; i++) {
                 calcObject(obj.children[i]);
             }
@@ -119,13 +124,25 @@ module.exports = class{
         let renderFunction = function(){
             requestAnimationFrame(renderFunction);
             
-            t.scene.rotation.x = t.rotation.x;
-            t.scene.rotation.y = t.rotation.y;
-            t.scene.rotation.z = t.rotation.z;
+            if(t.pCamera !== null){
+                t.scene.rotation.x = 0;
+                t.scene.rotation.y = 0;
+                t.scene.rotation.z = 0;
+            }
+            else{
+                t.scene.rotation.x = t.rotation.x;
+                t.scene.rotation.y = t.rotation.y;
+                t.scene.rotation.z = t.rotation.z;
+            }
 
             calcObject(t.scene);
 
-			t.renderer.render(t.scene, t.camera);
+            if(t.pCamera !== null){
+                t.renderer.render(t.scene, t.pCamera);
+            }
+            else{
+                t.renderer.render(t.scene, t.camera);
+            }
         }
         renderFunction();
 
@@ -223,6 +240,12 @@ module.exports = class{
 
                     }
 
+                    if(e.key == "p"){
+                        if(String(t.selectedObject.type).indexOf("Camera") > -1){
+                            t.pCamera = t.selectedObject;
+                        }
+                    }
+
                 }
             }
         });
@@ -230,6 +253,12 @@ module.exports = class{
         $(document).keyup(function(e){
             if(!$(t.container).is(":hover")){
                 return;
+            }
+
+            if(e.key == "p"){
+                if(String(t.selectedObject.type).indexOf("Camera") > -1){
+                    t.pCamera = null;
+                }
             }
 
             if(t.selectedObject !== null){
@@ -270,6 +299,10 @@ module.exports = class{
                 if(keyPress == 1){
                     startX = t.rotation.x;
                     startY = t.rotation.y;
+                }
+
+                if(keyPress == 1 && t.pCamera !== null){
+                    keyPress = -1;
                 }
 
                 if(keyPress == 2){

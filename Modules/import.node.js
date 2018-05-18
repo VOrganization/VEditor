@@ -372,6 +372,11 @@ module.exports = class{
                             break;
                         }
 
+                        case 5:{
+                            o = new THREE.PerspectiveCamera();
+                            break;
+                        }
+
                         default:{
                             o = new THREE.Object3D();
                             break;

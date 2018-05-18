@@ -278,6 +278,10 @@ module.exports = class{
                         type = 4;
                         break;
 
+                    case "PerspectiveCamera":
+                        type = 5;
+                        break;
+
                     default:
                         break;
                 }
@@ -379,6 +383,25 @@ module.exports = class{
 
                         d = BPush(d, BFloat(obj.intensity));
 
+                        break;
+                    }
+
+                    case 5:{
+                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BFloat(0));
+
+                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BFloat(0));
+
+                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BFloat(0));
+
+                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BFloat(0));
                         break;
                     }
 

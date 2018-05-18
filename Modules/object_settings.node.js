@@ -7,14 +7,8 @@ module.exports = class{
         this.type = "display";
         this.name = "object_settings";
         this.containerName = "context_settings";
-        this.html = "object_settings2.html";
+        this.html = "object_settings.html";
 
-        this.saveCallback = null;
-        this.loadCallback = null;
-        this.createCallback = null;
-        this.exportCallback = null;
-        this.importCallback = null;
-        this.exitCallback = null;
         this.selectCallback = this.update;
         
         this.container = null;
@@ -27,9 +21,7 @@ module.exports = class{
 
     }
 
-    destroy() {
-        
-    }
+    destroy() { }
 
     findObject(uuid, obj){
         if(obj.uuid == uuid){
@@ -103,6 +95,10 @@ module.exports = class{
 
             if(obj.type == "Mesh"){
                 this.setMaterial(editor);
+            }
+
+            if(String(obj.type).indexOf("Camera") > -1){
+                this.setCamera(editor);
             }
 
         }
@@ -753,11 +749,46 @@ module.exports = class{
 
     }
 
+    initCamera(editor){
+        let t = this;
+        let c = $(this.container).children(".camera_settings");
+
+        c.children(".camera_fov").change(function(){
+            t.selectObject.fov = Number($(this).val());
+        });
+
+        c.children(".camera_near").change(function(){
+            t.selectObject.near = Number($(this).val());
+        });
+
+        c.children(".camera_far").change(function(){
+            t.selectObject.far = Number($(this).val());
+        });
+
+        c.children(".camera_zoom").change(function(){
+            t.selectObject.zoom = Number($(this).val());
+        });
+
+    }
+
+    setCamera(editor){
+        let t = this;
+        let c = $(this.container).children(".camera_settings");
+        c.show();
+
+        c.children(".camera_fov").val(t.selectObject.fov);
+        c.children(".camera_near").val(t.selectObject.near);
+        c.children(".camera_far").val(t.selectObject.far);
+        c.children(".camera_zoom").val(t.selectObject.zoom);
+
+    }
+
     init(editor){
         this.initModel(editor);
         this.initTransform(editor);
         this.initLight(editor);
         this.initMaterial(editor);
+        this.initCamera(editor);
     }
 
     setContainer(jqueryObject, editor){
@@ -765,4 +796,5 @@ module.exports = class{
         $(this.container).children(".context_settings_div").hide();
         this.init(editor);
     }
+
 }
