@@ -319,7 +319,6 @@ module.exports = class{
                         BReadUint32(d, i);
                         BReadUint32(d, i);
 
-                        console.log(mat);
                         editor.project.materials.push(mat);
                     }
                 }

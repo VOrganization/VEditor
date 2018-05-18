@@ -22,9 +22,6 @@ module.exports = class{
         </div>
         `;
 
-        this.changeDataCallback = this.update;
-        this.selectCallback = this.updateSelect;
-
         this.container = null;
         this.menuObject = null;
         this.menuJQObject = null;
@@ -51,7 +48,21 @@ module.exports = class{
         if(String(obj.name).indexOf("Helper") > -1){
             return;
         }
-        if(obj.children.length > 0 && (obj.children.length == 1 && String(obj.children[0].name).indexOf("Helper") > -1)){
+
+        let is_parent = false;
+        if(obj.children.length > 0){
+            let num = obj.children.length;
+            for (let i = 0; i < obj.children.length; i++) {
+                if(String(obj.children[i].name).indexOf("Helper") > -1){
+                    num -= 1;
+                }
+            }
+            if(num > 0){
+                is_parent = true;
+            }
+        }
+
+        if(is_parent){
             con.append(`
             <li class="object_list_item" id="` + obj.uuid + `">
                 <div class="object_list_icon"><img src="ResourcesStatic/img/` + String(obj.type).toLocaleLowerCase() + `.png" /></div>
@@ -62,7 +73,7 @@ module.exports = class{
             `);
             let p = $(con).children("li").children(".object_list_item_children").eq($(con).children("li").children(".object_list_item_children").length - 1);
             for (let i = 0; i < obj.children.length; i++) {
-                this.showObj(obj.children[i], p)
+                this.showObj(obj.children[i], p);
             }
         }
         else{
@@ -76,7 +87,7 @@ module.exports = class{
         }
     }
 
-    update(editor){
+    changeDataCallback(editor){
         if(editor.project == null || editor.project.scene.file === null || editor.project.scene.file === undefined){
             return;
         }
@@ -129,7 +140,7 @@ module.exports = class{
         
     }
 
-    updateSelect(editor){
+    selectCallback(editor){
         $(".object_list_item").removeClass("object_list_item_select");
         if(editor.selected.type == "object"){
             $(".object_list_item#"+editor.selected.uuid).addClass("object_list_item_select");

@@ -117,8 +117,13 @@ module.exports = class{
             if(editor.selected.type == "file"){
                 LoadModel(editor.selected.filename, function(d){
                     if(d !== null){
-                        editor.project.scene.data.add(d);
+                        let obj = d.clone();
+                        editor.project.scene.data.add(obj);
                         CallFunctionFromModules("changeDataCallback");
+                        editor.selected = {
+                            type: "object",
+                            uuid: obj.uuid
+                        };
                     }
                     else{
                         console.log("Error while loading model");

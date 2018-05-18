@@ -174,6 +174,22 @@ WebContext.openDevTools(); //tymczasowo
             label: "Object",
             submenu: [
                 {
+                    label: "Empty",
+                    click(){
+                        let o = new THREE.Object3D();
+                        o.name = "Empty";
+                        editor.project.scene.data.add(o);
+                        CallFunctionFromModules("changeDataCallback");
+                        editor.selected = {
+                            type: "object",
+                            uuid: o.uuid
+                        };
+                    }
+                },
+                {
+                    type: "separator"
+                },
+                {
                     label: "Light Point",
                     click(){
                         if(editor.project.scene.data !== null){
@@ -227,10 +243,14 @@ WebContext.openDevTools(); //tymczasowo
                 {
                     label: "Camera",
                     click(){
-                        // let cam = new THREE.PerspectiveCamera( 45, 1, 1, 1000 );
-                        // cam.name = 'Camera';
-                        // editor_data.data.object.push(cam);
-                        // editor_update_data();
+                        let cam = new THREE.PerspectiveCamera( 45, 1, 1, 1000 );
+                        cam.name = "Camera";
+                        editor.project.scene.data.add(cam);
+                        CallFunctionFromModules("changeDataCallback");
+                        editor.selected = {
+                            type: "object",
+                            uuid: cam.uuid
+                        };
                     }
                 },
                 {
@@ -314,10 +334,16 @@ WebContext.openDevTools(); //tymczasowo
     let models_path = path.join(__dirname, "ResourcesDynamic");
     let models_label = 2;
     let calc_models = function(file, parent){
-        console.log("Models");
-        console.log(parent);
         if(fs.lstatSync(file).isDirectory()){
-
+            let files = fs.readdirSync(file);
+            parent.push({
+                label: path.basename(file),
+                submenu: []
+            });
+            let p = parent[parent.length - 1].submenu;
+            for (let i = 0; i < files.length; i++) {
+                calc_models(path.join(file, files[i]), p);
+            }
         }
         else{
             if(findFileType(path.extname(file)) == "model"){
