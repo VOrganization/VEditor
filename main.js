@@ -233,6 +233,9 @@ WebContext.openDevTools(); //tymczasowo
                         // editor_update_data();
                     }
                 },
+                {
+                    type: "separator"
+                },
             ]
         },
         {
@@ -306,6 +309,45 @@ WebContext.openDevTools(); //tymczasowo
                 });
             }
         });
+    }
+
+    let models_path = path.join(__dirname, "ResourcesDynamic");
+    let models_label = 2;
+    let calc_models = function(file, parent){
+        console.log("Models");
+        console.log(parent);
+        if(fs.lstatSync(file).isDirectory()){
+
+        }
+        else{
+            if(findFileType(path.extname(file)) == "model"){
+                LoadModel(file, function(d){ });
+                parent.push({
+                    label: path.basename(file, path.extname(file)),
+                    click(){
+                        LoadModel(file, function(d){
+                            if(d !== null){
+                                let obj = d.clone();
+                                editor.project.scene.data.add(obj);
+                                CallFunctionFromModules("changeDataCallback");
+                                editor.selected = {
+                                    type: "object",
+                                    uuid: obj.uuid
+                                };
+                            }
+                            else{
+                                console.log("Error while loading model");
+                                console.log(file);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    }
+    let models = fs.readdirSync(models_path);
+    for (let i = 0; i < models.length; i++) {
+        calc_models(path.join(models_path, models[i]), menu_context[models_label].submenu);
     }
 
     Window.setMenu(Menu.buildFromTemplate(menu_context));

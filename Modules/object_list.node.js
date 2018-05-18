@@ -51,7 +51,7 @@ module.exports = class{
         if(String(obj.name).indexOf("Helper") > -1){
             return;
         }
-        if(obj.children.length > 0){
+        if(obj.children.length > 0 && (obj.children.length == 1 && String(obj.children[0].name).indexOf("Helper") > -1)){
             con.append(`
             <li class="object_list_item" id="` + obj.uuid + `">
                 <div class="object_list_icon"><img src="ResourcesStatic/img/` + String(obj.type).toLocaleLowerCase() + `.png" /></div>
