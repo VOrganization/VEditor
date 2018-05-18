@@ -62,7 +62,7 @@ module.exports = class{
 * calculation - to dodatek, który wykonywuje się jedynie w tle i służy do obliczeń na danych
 
 ## Autorzy
-* Wiktor "wiktortr Trybulec – główny programista i pomysłodawca projektu
+* Wiktor "wiktortr" Trybulec – główny programista i pomysłodawca projektu
 
 ## Kontakt
 W razie pytań proszę pisać na email: wiktortr9@gmail.com
@@ -74,7 +74,7 @@ W razie pytań proszę pisać na email: wiktortr9@gmail.com
 * [jQuery](https://jquery.com) - MIT License
 * [jQuery resize plugin](https://github.com/sdecima/javascript-detect-element-resize) - MIT License
 * [jQuery mousewheel](https://github.com/jquery/jquery-mousewheel) - MIT License
-* [three.js](https://threejs.org) - MIT License
+* [Three.js](https://threejs.org) - MIT License
 * [Electron](https://electronjs.org) - MIT License
 * [Node.js](https://nodejs.org/) - MIT License
 
