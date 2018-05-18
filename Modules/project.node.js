@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 const template_project = {
     files: [],
@@ -29,6 +30,9 @@ module.exports = class{
     Load(editor){
         try {
             editor.project = JSON.parse(fs.readFileSync(editor.filename));
+            if(!fs.existsSync(path.join(editor.dirname, editor.project.scene.file))){
+                editor.project.scene = null;
+            }
         } catch (error) {
             console.log("Error While Load Project");
             console.log(error);

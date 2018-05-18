@@ -321,7 +321,6 @@ module.exports = class{
                     }
                 
                     case 2:{
-
                         d = BPush(d, BVec3(obj.ambient));
                         d = BPush(d, BVec3(obj.color));
                         d = BPush(d, BVec3(obj.specular));
@@ -329,7 +328,7 @@ module.exports = class{
                         let kl = 0;
                         let kq = 0;
                         while (true) {
-                            let tmp = (1.0 / (obj.decay + kl * obj.distance + kq * Math.pow(obj.distance, 2))) * obj.intensity;
+                            let tmp = 1.0 / (obj.decay + kl * obj.distance + kq * Math.pow(obj.distance, 2));
                             kl += 0.001;
                             kq += 0.0001;
                             if(tmp < 0.001){
@@ -337,9 +336,48 @@ module.exports = class{
                             }
                         }
 
+                        d = BPush(d, BFloat(obj.intensity));
+
                         d = BPush(d, BFloat(obj.decay));
                         d = BPush(d, BFloat(kl));
                         d = BPush(d, BFloat(kq));
+                        break;
+                    }
+
+                    case 3:{
+                        d = BPush(d, BVec3(obj.ambient));
+                        d = BPush(d, BVec3(obj.color));
+                        d = BPush(d, BVec3(obj.specular));
+
+                        let kl = 0;
+                        let kq = 0;
+                        while (true) {
+                            let tmp = 1.0 / (obj.decay + kl * obj.distance + kq * Math.pow(obj.distance, 2));
+                            kl += 0.001;
+                            kq += 0.0001;
+                            if(tmp < 0.001){
+                                break;
+                            }
+                        }
+
+                        d = BPush(d, BFloat(obj.intensity));
+
+                        d = BPush(d, BFloat(obj.decay));
+                        d = BPush(d, BFloat(kl));
+                        d = BPush(d, BFloat(kq));
+
+                        d = BPush(d, BFloat(obj.angle));
+                        d = BPush(d, BFloat(obj.penumbra));
+
+                        break;
+                    }
+
+                    case 4:{
+                        d = BPush(d, BVec3(obj.ambient));
+                        d = BPush(d, BVec3(obj.color));
+                        d = BPush(d, BVec3(obj.specular));
+
+                        d = BPush(d, BFloat(obj.intensity));
 
                         break;
                     }

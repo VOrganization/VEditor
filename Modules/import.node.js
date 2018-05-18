@@ -78,7 +78,7 @@ module.exports = class{
     }
 
     loadCB(editor){
-        if(editor.project.scene.file == null || editor.project.scene.file == undefined){
+        if(editor.project.scene === null || editor.project.scene === undefined || editor.project.scene.file == null || editor.project.scene.file == undefined){
             return;
         }
 
@@ -459,6 +459,7 @@ module.exports = class{
                             o["color"] = BReadColorRGB(d, i);
                             o["specular"] = BReadColorRGB(d, i);
 
+                            o.intensity = BReadFloat(d, i);
                             o["decay"] = BReadFloat(d, i);
                             o["linear"] = BReadFloat(d, i);
                             o["quadratic"] = BReadFloat(d, i);
@@ -472,7 +473,6 @@ module.exports = class{
                                 o.distance += 0.1;
                             }
                             o.distance = Math.round(o.distance);
-
                             break;
                         }
 
@@ -481,30 +481,33 @@ module.exports = class{
                             o["color"] = BReadColorRGB(d, i);
                             o["specular"] = BReadColorRGB(d, i);
 
+                            o.intensity = BReadFloat(d, i);
 
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
+                            o["decay"] = BReadFloat(d, i);
+                            o["linear"] = BReadFloat(d, i);
+                            o["quadratic"] = BReadFloat(d, i);
 
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            //spot light
+                            o.angle = BReadFloat(d, i);
+                            o.penumbra = BReadFloat(d, i);
+
+                            o.distance = 0;
+                            while (true) {
+                                let a = 1.0 / (o.decay + o.linear * o.distance + o.quadratic * o.distance * o.distance);
+                                if(a < 0.001){
+                                    break;
+                                }
+                                o.distance += 0.1;
+                            }
+                            o.distance = Math.round(o.distance);
                             break;
                         }
 
                         case 4:{
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
+                            o["ambient"] = BReadColorRGB(d, i);
+                            o["color"] = BReadColorRGB(d, i);
+                            o["specular"] = BReadColorRGB(d, i);
 
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            //dir light
+                            o.intensity = BReadFloat(d, i);
                             break;
                         }
 

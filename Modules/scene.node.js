@@ -41,7 +41,7 @@ module.exports = class{
     }
 
     initData(editor){
-        if(editor.project.scene.file !== undefined && editor.project.scene.file !== null){
+        if(editor.project.scene !== null && editor.project.scene.file !== undefined && editor.project.scene.file !== null){
             this.scene = editor.project.scene.data;
         }
         else{
@@ -105,8 +105,8 @@ module.exports = class{
             if(obj.type == "SpotLight" || obj.type == "DirectionalLight"){
                 let matrix = new THREE.Matrix4();
                 matrix = matrix.extractRotation(obj.matrix);
-                let dir = new THREE.Vector3(0, -1, 0).applyMatrix4(matrix);
-                obj.target.position.set(dir.x, dir.y, dir.z);
+                let dir = new THREE.Vector3(0, 1, 0).applyMatrix4(matrix);
+                obj.target.position.set(dir.x + obj.position.x, dir.y, dir.z + obj.position.z);
                 obj.target.name = "Helper";
                 t.scene.add(obj.target);
             }
@@ -451,6 +451,14 @@ module.exports = class{
             help.add(h);
         }
 
+        if(obj.type == "SpotLight"){
+            let h = new THREE.Mesh(new THREE.ConeBufferGeometry( 1, 4, 32 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
+            h.name = "Helper";
+            h.matrixAutoUpdate = true;
+            h.position.y = -2;
+            help.add(h);
+        }
+
         if(obj.type == "DirectionalLight"){
             let h = new THREE.Mesh(new THREE.BoxBufferGeometry( 5, 0.01, 5 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
             h.name = "Helper";
@@ -555,4 +563,5 @@ module.exports = class{
         this.editor = editor;
         this.initScene();
     }
+
 }
