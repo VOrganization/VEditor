@@ -28,6 +28,7 @@ module.exports = class{
         this.renderer = null;
         this.camera = null;
         this.pCamera = null;
+        this.pCameraHelper = null;
         this.scene = null;
         this.raycaster = null;
         this.mouse = null;
@@ -114,6 +115,13 @@ module.exports = class{
 
             if(String(obj.type).indexOf("Camera") > -1){
                 obj.aspect = t.container.width() / t.container.height();
+                obj.updateProjectionMatrix();
+                if(obj != t.pCamera){
+                    t.calcHelper(obj);
+                    if(editor.selected.type == "object" && editor.selected.uuid == obj.uuid){
+                        t.updateHelper(obj.uuid, obj, false);
+                    }
+                }
             }
 
             for (let i = 0; i < obj.children.length; i++) {
@@ -242,6 +250,7 @@ module.exports = class{
 
                     if(e.key == "p"){
                         if(String(t.selectedObject.type).indexOf("Camera") > -1){
+                            t.selectedObject.children = [];
                             t.pCamera = t.selectedObject;
                         }
                     }
