@@ -1,0 +1,133 @@
+body{
+    font-family: "Lato";
+    --main-bg-color0: #222222;
+    --main-bg-color1: #272727;
+    --main-separator-solor: #424242;
+    --main-element-color0: #353535;
+    --main-element-color1: #212121;
+    --main-font-color0: #dcdcdc;
+    --main-font-color1: #77a3d0;
+    --main-font-shadow: #353535;
+
+    --interactive-color: #154c9c;
+
+    --input-color0: #c5c5c5;
+    --input-color1: #202020;
+}
+
+::-webkit-scrollbar-track{
+
+	background-color: var(--main-bg-color0);
+}
+
+::-webkit-scrollbar{
+	width: 10px;
+}
+
+::-webkit-scrollbar-thumb{
+	background-color: var(--main-element-color0);
+	border: 1px solid var(--main-font-shadow);
+}
+
+img{
+    user-select: none;
+}
+
+input, select{
+    border: none;
+    color: var(--input-color0);
+    background-color: var(--input-color1);
+    padding: 3px;
+    box-sizing: border-box;
+    -moz-appearance: textfield;
+}
+
+input:focus, select:focus{
+    outline: none !important;
+    border: none;
+    box-shadow: none;
+}
+
+
+input[type=number]::-webkit-inner-spin-button {
+  opacity: 0.5;
+}
+
+.sp-dd{
+    color: var(--input-color0);
+}
+
+.sp-choose{
+    display: none;
+}
+
+.pcolor0, .pcolor1, .sp-picker-container{
+    background-color: var(--input-color1);
+    box-shadow: none;
+    outline: none !important;
+    border: none;
+    color: var(--input-color0);
+}
+
+.pcolor1{
+	padding: 3px;
+	max-height: 23px;
+	margin-bottom: 1px;
+}
+
+.sp-dd{
+	height: 5px;
+	float:right;
+}
+
+.sp-preview{
+	max-height: 15px;
+	width: calc(100% - 17px);
+}
+
+.bl{
+    clear: both;
+
+}
+
+/* .modal{
+    position: absolute;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.71);
+    width: 100%;
+    height: 100%;
+}
+
+.modal > div{
+	position: absolute;
+	z-index: 1001;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%,-130%);
+	background-color: var(--main-element-color0);
+	color: var(--main-font-color0);
+    box-shadow: 0 0 10px 1px var(--main-separator-solor);
+
+    width: 300px;
+    height: 200px;
+}
+
+.modal-header, .modal-footer{
+	padding: 10px;
+	box-sizing: border-box;
+	width: 100%;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.modal-header{
+	top: 0;
+	border-bottom: 2px solid var(--main-element-color1);
+}
+
+.modal-footer{
+	position: absolute;
+	border-top: 2px solid var(--main-element-color1);
+	bottom: 0;
+} */
+

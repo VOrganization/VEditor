@@ -1,7 +1,7 @@
 {
-  "name": "editorv2",
+  "name": "veditor",
   "version": "1.0.0",
-  "description": "Editor for NNGEngine",
+  "description": "Editor for VEngine",
   "main": "app.js",
   "scripts": {
     "start": "./node_modules/.bin/electron ."
@@ -10,12 +10,8 @@
   "license": "GNU",
   "dependencies": {
     "crypto": "^1.0.1",
-    "deasync": "^0.1.12",
     "electron": "^1.8.2",
-    "electron-debug": "^1.5.0",
     "jquery": "^3.3.1",
-    "system-sleep": "^1.3.6",
-    "three.js": "^0.77.1",
     "watchjs": "0.0.0"
   }
 }

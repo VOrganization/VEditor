@@ -8,27 +8,76 @@ const path = require("path");
 const url = require("url");
 const fs = require("fs");
 
+let splashScreen;
+let mainwindow;
+let loaded = false;
+
+let icon_path = path.join(__dirname, "ResourcesStatic", "icons");
+if(process.platform == "win32"){
+    icon_path = path.join(icon_path, "iconRound.ico");
+}
+else{
+    icon_path = path.join(icon_path, "iconRound.png");
+}
+
+function close_windows(){
+    mainwindow = null;
+    splashScreen = null;
+    app.exit();
+}
+
+global.editor = {
+    modules: new Array(),
+    modulesUsage: new Array(),
+    defaultLayout: null,
+    layout: new Array(),
+};
+
 app.on("ready", function(){
 
-    let mainwindow = new electron.BrowserWindow({
-        width: 800,
-        height: 600,
-        icon: path.join(__dirname, '/iconT.png')
+    splashScreen = new electron.BrowserWindow({
+        width: 400,
+        height: 490,
+        icon: icon_path,
+        frame: false
     });
 
-    mainwindow.webContents.toggleDevTools();
-
-    mainwindow.maximize();
-
-    mainwindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'index.html'),
-        protocol: 'file:',
+    splashScreen.loadURL(url.format({
+        pathname: path.join(__dirname, "splashScreen.html"),
+        protocol: "file:",
         slashes: true
     }));
-    
-    mainwindow.on('closed', function(){
-        mainwindow = null;
-        app.exit();
+
+    let mainwindowSize = electron.screen.getPrimaryDisplay().workAreaSize
+
+    mainwindow = new electron.BrowserWindow({
+        width: mainwindowSize.width,
+        height: mainwindowSize.height,
+        icon: icon_path,
+        show: false
+    });
+
+    mainwindow.loadURL(url.format({
+        pathname: path.join(__dirname, "index.html"),
+        protocol: "file:",
+        slashes: true
+    }));
+
+    splashScreen.on("closed", function(){
+        if(loaded){
+            splashScreen = null;
+        }
+        else{
+            close_windows();
+        }
+    });
+    mainwindow.on("closed", close_windows); 
+
+    ipc.on("load_msg", function(event, data){
+        splashScreen.webContents.send("splash-screen-msg", data);
+        if(data.state == 10){
+            loaded = true;
+        }
     });
 
 });
