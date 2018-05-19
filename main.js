@@ -243,13 +243,17 @@ WebContext.openDevTools(); //tymczasowo
                 {
                     label: "Camera",
                     click(){
-                        let cam = new THREE.PerspectiveCamera( 45, 1, 1, 1000 );
-                        cam.name = "Camera";
-                        editor.project.scene.data.add(cam);
+                        let o = new THREE.PerspectiveCamera( 45, 1, 1, 1000 );
+                        o.name = "Camera";
+                        o["Default"] = false;
+                        o["UseDirection"] = false;
+                        o["Direction"] = new THREE.Vector3(0, 0, 0);
+                        o["Up"] = new THREE.Vector3(0, 1, 0);
+                        editor.project.scene.data.add(o);
                         CallFunctionFromModules("changeDataCallback");
                         editor.selected = {
                             type: "object",
-                            uuid: cam.uuid
+                            uuid: o.uuid
                         };
                     }
                 },

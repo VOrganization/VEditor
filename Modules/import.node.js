@@ -45,6 +45,10 @@ function BReadColorRGB(data, i){
     return new THREE.Color(BReadFloat(data, i), BReadFloat(data, i), BReadFloat(data, i));
 }
 
+function BReadVec3(data, i){
+    return new THREE.Vector3(BReadFloat(data, i), BReadFloat(data, i), BReadFloat(data, i));
+}
+
 function BReadTexture(data, i){
     let is = BReadString2(data, i, 1);
     if(is == "O"){
@@ -374,6 +378,10 @@ module.exports = class{
 
                         case 5:{
                             o = new THREE.PerspectiveCamera();
+                            o["Default"] = false;
+                            o["UseDirection"] = false;
+                            o["Direction"] = new THREE.Vector3(0, 0, 0);
+                            o["Up"] = new THREE.Vector3(0, 1, 0);
                             break;
                         }
 
@@ -516,22 +524,18 @@ module.exports = class{
                         }
 
                         case 5:{
-                            //camera
-                            BReadUint8(d, i);
-                            BReadUint8(d, i);
-                            BReadUint8(d, i);
+                            o.Default = Boolean(BReadUint8(d, i));
+                            o.UseDirection = Boolean(BReadUint8(d, i));
+                            BReadUint8(d, i); // Perspective
 
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
+                            o.Direction = BReadVec3(d, i);
+                            
+                            o.Up = BReadVec3(d, i);
 
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
-                            BReadFloat(d, i);
+                            o.fov = BReadFloat(d, i);
+                            o.far = BReadFloat(d, i);
+                            o.near = BReadFloat(d, i);
+                            o.zoom = BReadFloat(d, i);
                             break;
                         }
 

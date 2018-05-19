@@ -387,21 +387,18 @@ module.exports = class{
                     }
 
                     case 5:{
-                        d = BPush(d, BFloat(0));
-                        d = BPush(d, BFloat(0));
-                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BUint8(obj.Default));
+                        d = BPush(d, BUint8(obj.UseDirection));
+                        d = BPush(d, BUint8(1));
 
-                        d = BPush(d, BFloat(0));
-                        d = BPush(d, BFloat(0));
-                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BVec3(obj.Direction));
 
-                        d = BPush(d, BFloat(0));
-                        d = BPush(d, BFloat(0));
-                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BVec3(obj.Up));
 
-                        d = BPush(d, BFloat(0));
-                        d = BPush(d, BFloat(0));
-                        d = BPush(d, BFloat(0));
+                        d = BPush(d, BFloat(obj.fov));
+                        d = BPush(d, BFloat(obj.far));
+                        d = BPush(d, BFloat(obj.near));
+                        d = BPush(d, BFloat(obj.zoom));
                         break;
                     }
 
