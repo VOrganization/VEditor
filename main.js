@@ -76,8 +76,6 @@ const path = require("path");
     });
 }
 
-WebContext.openDevTools(); //tymczasowo
-
 // Init Electron Window
 {
     let menu_context = [
