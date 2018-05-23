@@ -11,7 +11,6 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-
 module.exports = class{
 
     constructor(){
@@ -129,9 +128,20 @@ module.exports = class{
             }
         };
 
+        let p_w = 0;
+        let p_h = 0;
+
         let renderFunction = function(){
             requestAnimationFrame(renderFunction);
             
+            if(p_w != t.container.width() || p_h != t.container.height()){
+                p_w = t.container.width();
+                p_h = t.container.height();
+                t.camera.aspect = (p_w / p_h);
+                t.camera.updateProjectionMatrix();
+                t.renderer.setSize(p_w, p_h);
+            }
+
             if(t.pCamera !== null){
                 t.scene.rotation.x = 0;
                 t.scene.rotation.y = 0;
@@ -154,11 +164,10 @@ module.exports = class{
         }
         renderFunction();
 
-        $(this.container).resize(function(){
-            t.camera.aspect = (t.container.width() / t.container.height());
-            t.camera.updateProjectionMatrix();
-            t.renderer.setSize( t.container.width(), t.container.height() );
+        $(this.container).on("resize", function(){
+            
         });
+
 
         this.events();
     }
@@ -423,15 +432,15 @@ module.exports = class{
             option = "";
         });
 
-        $(this.container).bind("mousewheel", function(e) {
+        $(this.container).bind("wheel", function(e) {
             if(e.ctrlKey){
-                t.camera.position.x += e.deltaY * 0.5;
+                t.camera.position.x += e.originalEvent.deltaY * 0.003;
             }
             else if(e.shiftKey){
-                t.camera.position.y += e.deltaY * 0.5;
+                t.camera.position.y += e.originalEvent.deltaY * 0.003;
             }
             else{
-                t.camera.position.z -= e.deltaY * 0.5;
+                t.camera.position.z += e.originalEvent.deltaY * 0.003;
                 if(t.camera.position.z <= 0){
                     t.camera.position.z = 0.01;
                 }
