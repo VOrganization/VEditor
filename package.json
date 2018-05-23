@@ -4,7 +4,9 @@
   "description": "Editor for VEngine",
   "main": "index.js",
   "scripts": {
-    "start": "./node_modules/.bin/electron ."
+    "start": "./node_modules/.bin/electron .",
+    "build": "node build.js",
+    "build all": "node build.js all"
   },
   "author": "wiktortr",
   "license": "SEE LICENSE IN LICENSE",
