@@ -15,9 +15,15 @@ npm start
 
 ## Kompilacja
 
+Kompilujemy pod używany obecnie system
 ```sh
-npm install electron-packager -g
-electron-packager . VEngine --overwrite --asar --platform=all --arch=all --icon=ResourcesStatic/icons/icon.ico --out=builds
+npm run build
+```
+
+Kompilujemy pod wszystkie platformy
+
+```sh
+npm run build all
 ```
 
 ## Tworzenie dodatków
@@ -70,12 +76,10 @@ W razie pytań proszę pisać na email: wiktortr9@gmail.com
 ## Zewnętrzne biblioteki
 * [Fontello](http://fontello.com) - MIT License
 * [Golden Layout](https://golden-layout.com) - MIT License
-* [Spectrum](https://bgrins.github.io/spectrum/) - MIT License
 * [jQuery](https://jquery.com) - MIT License
-* [jQuery resize plugin](https://github.com/sdecima/javascript-detect-element-resize) - MIT License
-* [jQuery mousewheel](https://github.com/jquery/jquery-mousewheel) - MIT License
 * [Three.js](https://threejs.org) - MIT License
 * [Electron](https://electronjs.org) - MIT License
+* [Electron Packager](https://github.com/electron-userland/electron-packager) - BSD 2-Clause "Simplified" License
 * [Node.js](https://nodejs.org/) - MIT License
 
 ## Licencja
