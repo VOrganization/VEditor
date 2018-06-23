@@ -2,24 +2,18 @@
   "name": "veditor",
   "version": "1.0.0",
   "description": "Editor for VEngine",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "./node_modules/.bin/electron .",
     "build": "node build.js",
     "build all": "node build.js all"
   },
   "author": "wiktortr",
-  "license": "SEE LICENSE IN LICENSE",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/VOrganization/VEditor.git"
-  },
+  "license": "GNU",
   "dependencies": {
+    "crypto": "^1.0.1",
+    "electron": "^1.8.2",
     "jquery": "^3.3.1",
     "watchjs": "0.0.0"
-  },
-  "devDependencies": {
-    "electron": "^1.8.2",
-    "electron-packager": "^12.1.0"
   }
 }

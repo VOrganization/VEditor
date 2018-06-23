@@ -5,26 +5,7 @@
         <meta charset="UTF-8">
 
         <script type="text/javascript">window.$ = window.jQuery = require('jquery');</script>
-
-        <script type="text/javascript" src="Libraries/goldenlayout/goldenlayout.min.js"></script>
-        <link rel="stylesheet" href="Libraries/goldenlayout/goldenlayout-base.css">
-        <link rel="stylesheet" href="Libraries/goldenlayout/goldenlayout-dark-theme.css">
-
-        <script type="text/javascript" src="Libraries/inflate.min.js"></script>
         <script type="text/javascript" src="Libraries/three.min.js"></script>
-        <script type="text/javascript" src="Libraries/loaders/AssimpLoader.js"></script>
-        <script type="text/javascript" src="Libraries/loaders/BVHLoader.js"></script>
-        <script type="text/javascript" src="Libraries/loaders/ColladaLoader.js"></script>
-        <script type="text/javascript" src="Libraries/loaders/FBXLoader.js"></script>
-        <script type="text/javascript" src="Libraries/loaders/GLTFLoader.js"></script>
-        <script type="text/javascript" src="Libraries/loaders/OBJLoader.js"></script> 
-        <script type="text/javascript" src="Libraries/loaders/PLYLoader.js"></script>
-        <script type="text/javascript" src="Libraries/loaders/STLLoader.js"></script>
-
-        <link rel="stylesheet" href="Libraries/fontello/css/fontello.css">
-        <link rel="stylesheet" href="ResourcesStatic/css/font.css">
-        <link rel="stylesheet" href="ResourcesStatic/css/style.css">
-
         <script type="text/javascript">
         let editor = {
             THREE: null,
@@ -43,24 +24,15 @@
         };
         </script>
 
-        <script type="text/javascript">
-        let _main_path = __dirname;
-        {
-            let p = require("electron").remote.app.getPath("exe");
-            if(p.indexOf("node_modules") > -1){
-                _main_path = __dirname;
-            }
-            else{
-                _main_path = require("path").dirname(p);
-            }
-        }
-        </script>
-
         <script src="head.js"></script>
-        <script src="renderer.js"></script>
     </head>
 
     <body>
+
+        <link rel="stylesheet" href="ResourcesStatic/css/font.css">
+        <link rel="stylesheet" href="ResourcesStatic/css/style.css">
+        <script src="loader.js"></script>
+
     </body>
 
 </html>

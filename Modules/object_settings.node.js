@@ -221,41 +221,41 @@ module.exports = class{
     initLight(editor){
         let t = this;
 
-        // t.container.children(".light_settings").children(".light_diffuse").spectrum({
-        //     color: "#f00",
-        //     showButtons: false,
-        //     containerClassName: "pcolor0",
-        //     replacerClassName: "pcolor1 pp",
-        //     move: function(color) {
-        //         if(t.selectObject !== null){
-        //             t.selectObject.color = new THREE.Color(color.toHexString());
-        //         }
-        //     }
-        // });
+        t.container.children(".light_settings").children(".light_diffuse").spectrum({
+            color: "#f00",
+            showButtons: false,
+            containerClassName: "pcolor0",
+            replacerClassName: "pcolor1 pp",
+            move: function(color) {
+                if(t.selectObject !== null){
+                    t.selectObject.color = new THREE.Color(color.toHexString());
+                }
+            }
+        });
 
-        // t.container.children(".light_settings").children(".light_specular").spectrum({
-        //     color: "#f00",
-        //     showButtons: false,
-        //     containerClassName: "pcolor0",
-        //     replacerClassName: "pcolor1 pp",
-        //     move: function(color) {
-        //         if(t.selectObject !== null){
-        //             t.selectObject.specular = new THREE.Color(color.toHexString());
-        //         }
-        //     }
-        // });
+        t.container.children(".light_settings").children(".light_specular").spectrum({
+            color: "#f00",
+            showButtons: false,
+            containerClassName: "pcolor0",
+            replacerClassName: "pcolor1 pp",
+            move: function(color) {
+                if(t.selectObject !== null){
+                    t.selectObject.specular = new THREE.Color(color.toHexString());
+                }
+            }
+        });
 
-        // t.container.children(".light_settings").children(".light_ambient").spectrum({
-        //     color: "#f00",
-        //     showButtons: false,
-        //     containerClassName: "pcolor0",
-        //     replacerClassName: "pcolor1 pp",
-        //     move: function(color) {
-        //         if(t.selectObject !== null){
-        //             t.selectObject.ambient = new THREE.Color(color.toHexString());
-        //         }
-        //     }
-        // });
+        t.container.children(".light_settings").children(".light_ambient").spectrum({
+            color: "#f00",
+            showButtons: false,
+            containerClassName: "pcolor0",
+            replacerClassName: "pcolor1 pp",
+            move: function(color) {
+                if(t.selectObject !== null){
+                    t.selectObject.ambient = new THREE.Color(color.toHexString());
+                }
+            }
+        });
 
         t.container.children(".light_settings").children(".light_int").change(function(){
             if(t.selectObject !== null){
@@ -312,26 +312,26 @@ module.exports = class{
         let obj = this.selectObject;
 
         t.container.children(".light_settings").show();
-        // t.container.children(".light_settings").children(".light_diffuse").spectrum("set", obj.color.getHexString());
-        // t.container.children(".light_settings").children(".light_specular").spectrum("set", obj.specular.getHexString());
-        // t.container.children(".light_settings").children(".light_ambient").spectrum("set", obj.ambient.getHexString());
+        t.container.children(".light_settings").children(".light_diffuse").spectrum("set", obj.color.getHexString());
+        t.container.children(".light_settings").children(".light_specular").spectrum("set", obj.specular.getHexString());
+        t.container.children(".light_settings").children(".light_ambient").spectrum("set", obj.ambient.getHexString());
         t.container.children(".light_settings").children(".light_int").val(obj.intensity);
         t.container.children(".light_settings").children(".light_shadow").prop("checked", obj.castShadow);
         t.container.children(".light_settings").children(".light_shadow_quality").val(obj.shadow.quality);
         t.container.children(".light_settings").children(".light_shadow_near").val(obj.shadow.camera.near);
         t.container.children(".light_settings").children(".light_shadow_far").val(obj.shadow.camera.far);
 
-        // watchjs.watch(obj, "color", function(){
-        //     t.container.children(".light_settings").children(".light_diffuse").spectrum("set", obj.color.getHexString());
-        // });
+        watchjs.watch(obj, "color", function(){
+            t.container.children(".light_settings").children(".light_diffuse").spectrum("set", obj.color.getHexString());
+        });
 
-        // watchjs.watch(obj, "specular", function(){
-        //     t.container.children(".light_settings").children(".light_specular").spectrum("set", obj.specular.getHexString());
-        // });
+        watchjs.watch(obj, "specular", function(){
+            t.container.children(".light_settings").children(".light_specular").spectrum("set", obj.specular.getHexString());
+        });
 
-        // watchjs.watch(obj, "ambient", function(){
-        //     t.container.children(".light_settings").children(".light_ambient").spectrum("set", obj.ambient.getHexString());
-        // });
+        watchjs.watch(obj, "ambient", function(){
+            t.container.children(".light_settings").children(".light_ambient").spectrum("set", obj.ambient.getHexString());
+        });
 
         watchjs.watch(obj, "intensity", function(){
             t.container.children(".light_settings").children(".light_int").val(obj.intensity);
@@ -559,15 +559,15 @@ module.exports = class{
                 updateData(true, "needsUpdate");
             });
 
-            // matC.children(".material_color_diffuse").spectrum({
-            //     color: "#f00",
-            //     showButtons: false,
-            //     containerClassName: "pcolor0",
-            //     replacerClassName: "pcolor1 pp no-shader",
-            //     move: function(color) {
-            //         updateData(new THREE.Color(color.toHexString()), "color");
-            //     }
-            // });
+            matC.children(".material_color_diffuse").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 pp no-shader",
+                move: function(color) {
+                    updateData(new THREE.Color(color.toHexString()), "color");
+                }
+            });
 
             matC.children(".material_map_diffuse").change(function(){
                 updateTexture(Number($(this).val()), "map");
@@ -589,15 +589,15 @@ module.exports = class{
                 updateData(Number($(this).val()), "metalness");
             });
 
-            // matC.children(".material_color_specular").spectrum({
-            //     color: "#f00",
-            //     showButtons: false,
-            //     containerClassName: "pcolor0",
-            //     replacerClassName: "pcolor1 phong pp no-shader",
-            //     move: function(color) {
-            //         updateData(new THREE.Color(color.toHexString()), "specular");
-            //     }
-            // });
+            matC.children(".material_color_specular").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 phong pp no-shader",
+                move: function(color) {
+                    updateData(new THREE.Color(color.toHexString()), "specular");
+                }
+            });
 
             matC.children(".material_map_specular").change(function(){
                 updateTexture(Number($(this).val()), "specularMap");
@@ -607,15 +607,15 @@ module.exports = class{
                 updateData(Number($(this).val()), "shininess");
             });
 
-            // matC.children(".material_color_emission").spectrum({
-            //     color: "#f00",
-            //     showButtons: false,
-            //     containerClassName: "pcolor0",
-            //     replacerClassName: "pcolor1 pp no-shader",
-            //     move: function(color) {
-            //         updateData(new THREE.Color(color.toHexString()), "emissive");
-            //     }
-            // });
+            matC.children(".material_color_emission").spectrum({
+                color: "#f00",
+                showButtons: false,
+                containerClassName: "pcolor0",
+                replacerClassName: "pcolor1 pp no-shader",
+                move: function(color) {
+                    updateData(new THREE.Color(color.toHexString()), "emissive");
+                }
+            });
 
             matC.children(".material_map_emission").change(function(){
                 updateTexture(Number($(this).val()), "emissiveMap");
@@ -716,9 +716,9 @@ module.exports = class{
         }
 
         matC.children(".material_map_diffuse").val(t.getTextureValue(mat.map));
-        // matC.children(".material_color_diffuse").spectrum("set", mat.color.getHexString());
+        matC.children(".material_color_diffuse").spectrum("set", mat.color.getHexString());
         matC.children(".material_map_emission").val(t.getTextureValue(mat.emissiveMap));
-        // matC.children(".material_color_emission").spectrum("set", mat.emissive.getHexString());
+        matC.children(".material_color_emission").spectrum("set", mat.emissive.getHexString());
         matC.children(".material_int_emission").val(mat.emissiveIntensity);
         matC.children(".material_refraction").val(mat.refractionRatio);
         matC.children(".material_normal_map").val(t.getTextureValue(mat.normalMap));
@@ -742,7 +742,7 @@ module.exports = class{
             matC.children(".pbr").hide();
             matC.children(".material_type").val("Phong");
             matC.children(".material_reflection").val(mat.reflectivity);
-            // matC.children(".material_color_specular").spectrum("set", mat.specular.getHexString());
+            matC.children(".material_color_specular").spectrum("set", mat.specular.getHexString());
             matC.children(".material_map_specular").val(t.getTextureValue(mat.specularMap));
             matC.children(".material_shi_specular").val(mat.shininess);
         }
