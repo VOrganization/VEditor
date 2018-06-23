@@ -1,6 +1,3 @@
-# Visual Studio Code ignore
-.vscode
-
 # Node.js and NPM ignore
 node_modules
 package-lock.json
