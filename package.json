@@ -19,6 +19,7 @@
   "dependencies": {
     "electron": "^1.8.2",
     "jquery": "^3.3.1",
+    "three": "^0.93.0",
     "watchjs": "0.0.0"
   }
 }

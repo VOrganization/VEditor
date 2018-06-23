@@ -10,7 +10,7 @@ const WebContext = remote.getCurrentWebContents();
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
-
+//const THREE = require("three");
 
 module.exports = class{
 
@@ -18,7 +18,7 @@ module.exports = class{
         this.type = "display";
         this.name = "scene";
         this.containerName = "context_scene";
-        this.html = `<div class="context_scene" style="width: 100%; height: 100%; user-select: none;"></div>`;
+        this.html = `scene.html`;
 
         this.loadCallback = this.initData;
         this.changeDataCallback = this.updateData;
@@ -85,12 +85,13 @@ module.exports = class{
 
     initScene(){
         let t = this;
-        
+        let c = $(this.container).children(".context_scene_webgl");
+
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(100, 100);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.BasicShadowMap;
-        $(this.container).append(this.renderer.domElement);
+        c.append(this.renderer.domElement);
         
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
@@ -154,10 +155,10 @@ module.exports = class{
         }
         renderFunction();
 
-        $(this.container).resize(function(){
-            t.camera.aspect = (t.container.width() / t.container.height());
+        c.resize(function(){
+            t.camera.aspect = (c.width() / c.height());
             t.camera.updateProjectionMatrix();
-            t.renderer.setSize( t.container.width(), t.container.height() );
+            t.renderer.setSize(c.width(), c.height() );
         });
 
         this.events();
@@ -290,7 +291,7 @@ module.exports = class{
             }
         });
 
-        $(this.container).bind("mousedown", function(e){
+        $(this.container).children(".context_scene_webgl").bind("mousedown", function(e){
             if(keyPress > 3){
                 if(e.button == 2){
                     t.selectedObject[type].x = startData.x;
@@ -357,7 +358,7 @@ module.exports = class{
             }
         });
 
-        $(this.container).bind("mousemove", function(e){
+        $(this.container).children(".context_scene_webgl").bind("mousemove", function(e){
 
             if(keyPress == 1){
                 t.rotation.y = startY + ((e.pageX - startMouseX)*0.5) * Math.PI / 180;
@@ -418,7 +419,7 @@ module.exports = class{
             }
         });
 
-        $(this.container).bind("mouseup", function(e){
+        $(this.container).children(".context_scene_webgl").bind("mouseup", function(e){
             keyPress = -1;
             option = "";
         });

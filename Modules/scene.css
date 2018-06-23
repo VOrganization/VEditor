@@ -1,0 +1,58 @@
+.context_scene{
+    width: 100%;
+    height: 100%;
+    user-select: none;
+}
+
+.context_scene_webgl{
+    width: 100%;
+    height: calc(100% - 30px);
+}
+
+.context_scene_nav{
+    height: 33px;
+    box-shadow: 0 0 5px 2px #474747;
+    background-color: var(--main-element-color0);
+}
+
+.context_scene_nav_left{
+    float: left;
+    padding-left: 4px;
+}
+
+.context_scene_nav_right{
+    float: right;
+    padding-right: 4px;
+}
+
+.scene_option{
+    margin-top: 4px;
+    height: 23px;
+    float: left;
+    background-color: var(--main-element-color1);
+    margin-left: 2px;
+}
+
+.scene_option:first-child{
+    margin-left: 0px;
+}
+
+.scene_select{
+    width: 200px;
+}
+
+.scene_option > img{
+    width: 23px;
+    height: 23px;
+}
+
+.scene_option > span{
+    color: var(--main-font-color0);
+    line-height: 23px;
+    transition: color 0.2s ease-in-out;
+    user-select: none;
+}
+
+.scene_option > span:hover{
+    color: var( --interactive-color);
+}
