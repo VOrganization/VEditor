@@ -118,9 +118,19 @@ module.exports = class{
         this.orbit.mouseButtons.ZOOM = -1;
         this.orbit.enableKeys = false;
 
+        let p_w, p_h;
+
         let renderFunction = function(){
             requestAnimationFrame(renderFunction);
             
+            if(p_w != c.width() || p_h != c.height()){
+                p_w = c.width();
+                p_h = c.height();
+                t.camera.aspect = (p_w / p_h);
+                t.camera.updateProjectionMatrix();
+                t.renderer.setSize(p_w, p_h);
+            }
+
             t.scene.traverse((obj) => {
 
                 if(obj.name == "Helper" && !(obj instanceof THREE.TransformControls)){
@@ -146,12 +156,6 @@ module.exports = class{
             t.renderer.render(t.scene, t.camera);
         }
         renderFunction();
-
-        c.resize(function(){
-            t.camera.aspect = (c.width() / c.height());
-            t.camera.updateProjectionMatrix();
-            t.renderer.setSize(c.width(), c.height() );
-        });
 
         this.events();
     }

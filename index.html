@@ -6,9 +6,18 @@
 
         <script type="text/javascript">
             window.$ = window.jQuery = require('jquery');
-            
             const THREE = require("three");
+            const GoldenLayout = require("golden-layout");      
+            
+            const OBJLoader = require("three-obj-loader")(THREE);
+            const ColladaLoader = require("three-collada-loader-2");
+            const STLLoader = require("three-stl-loader")(THREE);
+            const GLTFLoader = require("three-gltf-loader");
+            const GLTF2Loader = require("three-gltf2-loader")(THREE);
         </script>
+
+        <link rel="stylesheet" href="node_modules/golden-layout/src/css/goldenlayout-base.css">
+        <link rel="stylesheet" href="node_modules/golden-layout/src/css/goldenlayout-dark-theme.css">
 
         <script type="text/javascript">
         let editor = {
