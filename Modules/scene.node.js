@@ -35,9 +35,6 @@ module.exports = class{
         this.scene = null;
         this.raycaster = null;
         this.mouse = null;
-        this.selectedObject = null;
-        this.helper = new Array();
-        this.rotation = { x: 45, y: 45, z: 0 };
         this.editor = null;
         this.control = null;
         this.orbit = null;
@@ -161,23 +158,56 @@ module.exports = class{
 
     events(){
         let t = this;
+        let menuL =  $(t.container).children(".context_scene_nav").children(".context_scene_nav_right");
+        let menuR =  $(t.container).children(".context_scene_nav").children(".context_scene_nav_right");
 
-        $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_move").click(() => {
+        menuL.children(".scene_move").click(() => {
             t.control.setMode("translate");
-            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children("*").removeClass("scene_active");
-            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_move").addClass("scene_active");
+            menuL.children("*").removeClass("scene_active");
+            menuL.children(".scene_move").addClass("scene_active");
         });
 
-        $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_rotation").click(() => {
+        menuL.children(".scene_rotation").click(() => {
             t.control.setMode("rotate");
-            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children("*").removeClass("scene_active");
-            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_rotation").addClass("scene_active");
+            menuL.children("*").removeClass("scene_active");
+            menuL.children(".scene_rotation").addClass("scene_active");
         });
 
-        $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_scale").click(() => {
+        menuL.children(".scene_scale").click(() => {
             t.control.setMode("scale");
-            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children("*").removeClass("scene_active");
-            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_scale").addClass("scene_active");
+            menuL.children("*").removeClass("scene_active");
+            menuL.children(".scene_scale").addClass("scene_active");
+        });
+
+        menuL.children(".scene_find_file").click((e) => {
+
+        });
+
+        menuL.children(".scene_select").change((e) => {
+
+        });
+
+        menuL.children(".scene_copy").click((e) => {
+
+        });
+
+        menuL.children(".scene_remove").click((e) => {
+
+        });
+
+        menuL.children(".scene_add").click((e) => {
+            dialog.showSaveDialog(Window, {
+                title: "Create Scene File",
+                filters: [
+                    {
+                        name: "Scene File",
+                        extensions: [ "vscene" ]
+                    }
+                ]
+            }, (file) => {
+
+                console.log(file);
+            });
         });
 
 
@@ -229,12 +259,14 @@ module.exports = class{
 
         });
 
+
         $(document).keyup(function(e){
             if(!$(t.container).is(":hover")){
                 return;
             }
 
         });
+
 
         $(this.container).children(".context_scene_webgl").bind("mousedown", function(e){
             if(e.button != 2){
