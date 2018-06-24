@@ -250,7 +250,7 @@ module.exports = class{
             t.scene.traverse((obj) => {
                 try {
                     let is_helper_tc = obj.parent.parent instanceof THREE.TransformGizmoTranslate || obj.parent.parent instanceof THREE.TransformGizmoScale || obj.parent.parent instanceof THREE.TransformGizmoRotate;
-                    if((obj.type == "Mesh" || obj.name == "Helper") && !is_helper_tc){
+                    if(obj.type == "Mesh" && !is_helper_tc){
                         objects.push(obj);
                     }    
                 } catch (error) {
