@@ -43,7 +43,7 @@ app.on("ready", function(){
     });
 
     splashScreen.loadURL(url.format({
-        pathname: path.join(__dirname, "splashScreen.html"),
+        pathname: path.join(__dirname, "splashScreen", "index.html"),
         protocol: "file:",
         slashes: true
     }));

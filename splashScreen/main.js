@@ -1,11 +1,9 @@
+window.$ = window.jQuery = require('jquery');
+
 const electron = require("electron");
 const remote = electron.remote;
 const ipc = electron.ipcRenderer;
-const dialog = remote.dialog;
-const Menu = remote.Menu;
-const Tray = remote.Tray;
 const Window = remote.getCurrentWindow();
-const WebContext = remote.getCurrentWebContents();
 
 ipc.on("splash-screen-msg", function(event, data){
     if(data.state == 0){
