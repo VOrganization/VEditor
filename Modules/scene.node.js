@@ -40,7 +40,6 @@ module.exports = class{
         this.rotation = { x: 45, y: 45, z: 0 };
         this.editor = null;
         this.control = null;
-        this.controls = new Array();
         this.orbit = null;
 
         this.composer = null;
@@ -120,37 +119,30 @@ module.exports = class{
         this.orbit.mouseButtons.ORBIT = 1;
         this.orbit.mouseButtons.PAN = 0;
         this.orbit.mouseButtons.ZOOM = -1;
-
-        let calcObject = function(obj){
-
-            if(obj.type == "SpotLight" || obj.type == "DirectionalLight"){
-                let matrix = new THREE.Matrix4();
-                matrix = matrix.extractRotation(obj.matrix);
-                let dir = new THREE.Vector3(0, 1, 0).applyMatrix4(matrix);
-                obj.target.position.set(dir.x + obj.position.x, dir.y, dir.z + obj.position.z);
-                obj.target.name = "Helper";
-                t.scene.add(obj.target);
-            }
-
-            if(String(obj.type).indexOf("Camera") > -1){
-                obj.aspect = t.container.width() / t.container.height();
-                obj.updateProjectionMatrix();
-                if(obj != t.pCamera){
-                    t.calcHelper(obj);
-                    if(editor.selected.type == "object" && editor.selected.uuid == obj.uuid){
-                        t.updateHelper(obj.uuid, obj, false);
-                    }
-                }
-            }
-
-            for (let i = 0; i < obj.children.length; i++) {
-                calcObject(obj.children[i]);
-            }
-        };
+        this.orbit.enableKeys = false;
 
         let renderFunction = function(){
             requestAnimationFrame(renderFunction);
-            calcObject(t.scene);
+            
+            t.scene.traverse((obj) => {
+
+                if(obj.name == "Helper" && !(obj instanceof THREE.TransformControls)){
+                    if(obj.update !== undefined){
+                        obj.update();
+                    }
+                }
+
+                if(obj.type == "SpotLight" || obj.type == "DirectionalLight"){
+                    let matrix = new THREE.Matrix4();
+                    matrix = matrix.extractRotation(obj.matrix);
+                    let dir = new THREE.Vector3(0, -1, 0).applyMatrix4(matrix);
+                    obj.target.position.set(dir.x + obj.position.x, dir.y, dir.z + obj.position.z);
+                    obj.target.name = "Helper";
+                    t.scene.add(obj.target);
+                }
+
+            });
+
             if(t.control !== null){
                 t.control.update();
             }
@@ -167,23 +159,27 @@ module.exports = class{
         this.events();
     }
 
-    foundParent(uuid, obj){
-        for (let i = 0; i < obj.children.length; i++) {
-            if(obj.children[i].uuid == uuid){
-                return obj;
-            }
-            else{
-                let o = this.foundParent(uuid, obj.children[i]);
-                if(o !== null){
-                    return o;
-                }
-            }
-        }
-        return null;
-    }
-
     events(){
         let t = this;
+
+        $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_move").click(() => {
+            t.control.setMode("translate");
+            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children("*").removeClass("scene_active");
+            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_move").addClass("scene_active");
+        });
+
+        $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_rotation").click(() => {
+            t.control.setMode("rotate");
+            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children("*").removeClass("scene_active");
+            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_rotation").addClass("scene_active");
+        });
+
+        $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_scale").click(() => {
+            t.control.setMode("scale");
+            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children("*").removeClass("scene_active");
+            $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_scale").addClass("scene_active");
+        });
+
 
         $(document).keypress(function(e){
             if(!$(t.container).is(":hover")){
@@ -191,21 +187,44 @@ module.exports = class{
             }
 
             if(e.key == "g"){
-                t.control.setMode( "translate" );
+                t.control.setMode("translate");
+                $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children("*").removeClass("scene_active");
+                $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_move").addClass("scene_active");
             }
 
             if(e.key == "r"){
                 t.control.setMode("rotate");
+                $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children("*").removeClass("scene_active");
+                $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_rotation").addClass("scene_active");
             }
 
             if(e.key == "s"){
                 t.control.setMode("scale");
+                $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children("*").removeClass("scene_active");
+                $(t.container).children(".context_scene_nav").children(".context_scene_nav_left").children(".scene_scale").addClass("scene_active");
             }
 
             if(e.key == "a"){
                 t.editor.selected = {
                     type: "none"
                 };
+            }
+
+            if(e.key == "d" && t.editor.selected.type == "object"){
+                t.scene.traverse((obj) => {
+                    if(obj.uuid == t.editor.selected.uuid){
+                        t.editor.selected = {
+                            type: "none"
+                        };
+                        let o = obj.clone();
+                        obj.parent.add(o);
+                        CallFunctionFromModules("changeDataCallback");
+                        editor.selected = {
+                            type: "object",
+                            uuid: o.uuid
+                        };    
+                    }
+                });
             }
 
         });
@@ -230,8 +249,8 @@ module.exports = class{
             let objects = new Array();
             t.scene.traverse((obj) => {
                 try {
-                    let is_helper = obj.parent.parent instanceof THREE.TransformGizmoTranslate || obj.parent.parent instanceof THREE.TransformGizmoScale || obj.parent.parent instanceof THREE.TransformGizmoRotate;
-                    if(obj.type == "Mesh" && !is_helper){
+                    let is_helper_tc = obj.parent.parent instanceof THREE.TransformGizmoTranslate || obj.parent.parent instanceof THREE.TransformGizmoScale || obj.parent.parent instanceof THREE.TransformGizmoRotate;
+                    if((obj.type == "Mesh" || obj.name == "Helper") && !is_helper_tc){
                         objects.push(obj);
                     }    
                 } catch (error) {
@@ -239,131 +258,95 @@ module.exports = class{
                 }    
             });
 
-
             let intersects = t.raycaster.intersectObjects(objects, true);
-            console.log(intersects[0]);
-            if(intersects[0]){
-                t.editor.selected = {
-                    type: "object",
-                    uuid: intersects[0].object.uuid, 
-                };
+            if(intersects.length > 0){
+                let obj = intersects[0].object;
+                if(t.editor.selected.type == "object" && t.editor.selected.uuid == obj.uuid){
+                    t.editor.selected = {
+                        type: "none",
+                    };
+                }
+                else{
+                    if(obj.name == "Helper"){
+                        t.editor.selected = {
+                            type: "object",
+                            uuid: obj.OID, 
+                        };
+                    }
+                    else{
+                        t.editor.selected = {
+                            type: "object",
+                            uuid: obj.uuid, 
+                        };
+                    }
+                }
             }
 
 
         });
-    }
-
-    calcHelper(obj){
-        if(obj.type == "LineSegments"){
-            return;
-        }
-
-        // let helper = new THREE.Group();
-        // helper.name = "TEST";
-        // obj.add(helper);
-
-        // for (let i = 0; i < obj.children.length; i++) {
-        //     if(String(obj.children[i].name).indexOf("Helper") > -1){
-        //         obj.remove(obj.children[i]);
-        //     }
-        // }
-
-        // //let help = new THREE.AxesHelper(1);
-        // let help = new THREE.Object3D();
-        // help.name = "Helper_" + obj.uuid;
-        // help["EID"] = obj.uuid;
-
-        // if(obj.type == "Group"){
-        //     let box = new THREE.Box3();
-        //     box.setFromCenterAndSize(new THREE.Vector3(0,0,0), new THREE.Vector3(0.3,0.3,0.3));
-        //     let h = new THREE.Box3Helper(box, 0xffff00);
-        //     h.name = "Helper";
-        //     h.matrixAutoUpdate = true;
-        //     help.add(h);
-        // }
-
-        // if(obj.type == "Mesh"){
-        //     // this.control.detach();
-        //     // this.control.attach(obj);
-        //     // obj.geometry.computeBoundingSphere();
-        //     // let r = obj.geometry.boundingSphere.radius * 1.5;
-        //     // let c = obj.geometry.boundingSphere.center;
-        //     // let box = new THREE.Box3();
-        //     // box.setFromCenterAndSize(new THREE.Vector3(c.x, c.y, c.z), new THREE.Vector3(r,r,r));
-        //     // let h = new THREE.Box3Helper(box, 0xffff00);
-        //     // h.name = "Helper";
-        //     // h.matrixAutoUpdate = true;
-        //     // help.add(h);
-
-        //     // obj.castShadow = true;
-        //     // obj.receiveShadow = true;
-
-        //     console.log("OK");
-        // }
-
-        // if(obj.type == "PerspectiveCamera"){
-        //     obj.aspect = (this.container.width() / this.container.height());
-        //     let h = new THREE.CameraHelper(obj);
-        //     h.name = "Helper";
-        //     h.matrixAutoUpdate = true;
-        //     help.add(h);
-        // }
-
-        // if(obj.type == "PointLight"){
-        //     let h = new THREE.Mesh(new THREE.SphereBufferGeometry( 0.3, 16, 8 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
-        //     h.name = "Helper";
-        //     h.matrixAutoUpdate = true;
-        //     help.add(h);
-        // }
-
-        // if(obj.type == "SpotLight"){
-        //     let h = new THREE.Mesh(new THREE.ConeBufferGeometry( 1, 4, 32 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
-        //     h.name = "Helper";
-        //     h.matrixAutoUpdate = true;
-        //     h.position.y = -2;
-        //     help.add(h);
-        // }
-
-        // if(obj.type == "DirectionalLight"){
-        //     let h = new THREE.Mesh(new THREE.BoxBufferGeometry( 5, 0.01, 5 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
-        //     h.name = "Helper";
-        //     h.matrixAutoUpdate = true;
-        //     help.add(h);
-        // }
-
-        // obj.add(help);
-
-        for (let i = 0; i < obj.children.length; i++) {
-            if(obj.children[i].type == "LineSegments" || obj.children[i].type == "AmbientLight" || obj.children[i].name == "Helper"){
-                continue;
-            }
-            this.calcHelper(obj.children[i]);
-        }
+        
     }
 
     updateData(editor){
         if(editor.project.scene.data !== undefined || editor.project.scene.data !== null){
             let t = this;
-
             let found = false;
-            for (let i = 0; i < editor.project.scene.data.children.length; i++) {
-                if(editor.project.scene.data.children[i].name == "Grid"){
+
+            this.scene = editor.project.scene.data;
+
+            t.scene.traverse((obj) => {
+                if(obj.name == "Grid"){
                     found = true;
-                    break;
                 }
-            }
+
+                if(obj.type == "PointLight"){
+                    let helper = new THREE.PointLightHelper(obj, 0.5);
+                    helper.name = "Helper";
+                    helper["OID"] = obj.uuid;
+                    t.scene.add(helper);
+                }
+
+                if(obj.type == "SpotLight"){
+                    let helper = new THREE.SpotLightHelper(obj);
+                    helper.name = "Helper";
+                    helper["OID"] = obj.uuid;
+                    t.scene.add(helper);
+                }
+
+                if(obj.type == "DirectionalLight"){
+                    let helper = new THREE.DirectionalLightHelper(obj, 5);
+                    helper.name = "Helper";
+                    helper["OID"] = obj.uuid;
+                    t.scene.add(helper);
+                }
+                
+                if(obj.type == "Group" || obj.type == "Object3D"){
+                    let helper = new THREE.AxesHelper(1);
+                    helper.name = "Helper";
+                    helper["OID"] = obj.uuid;
+                    
+                    let box = new THREE.Box3();
+                    box.setFromCenterAndSize( new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.3, 0.3, 0.3));
+                    let boxHelper = new THREE.Box3Helper( box, 0xffff00 );
+                    boxHelper.name = "Helper";
+                    boxHelper["OID"] = obj.uuid;
+                    helper.add(boxHelper);
+
+                    obj.add(helper);
+                }
+
+
+            });
+
             if(!found){
                 let grid = new THREE.GridHelper(100, 100, 0xffffff, 0x888888);
                 grid.name = "Grid";
                 editor.project.scene.data.add(grid);
             }
-            this.calcHelper(editor.project.scene.data);
-            this.scene = editor.project.scene.data;
-
 
             t.control = new THREE.TransformControls(t.camera, t.renderer.domElement);
             t.control.update();
-            t.control.name = "Helper";
+            t.control.name = "Helper_TC";
             t.scene.add(t.control);
         }
         else{

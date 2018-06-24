@@ -31,6 +31,11 @@
     float: left;
     background-color: var(--main-element-color1);
     margin-left: 2px;
+    transition: all 0.2s ease-in-out;
+}
+
+.scene_active{
+    background-color: var(--interactive-color);
 }
 
 .scene_option:first-child{
