@@ -19,7 +19,11 @@
   "dependencies": {
     "electron": "^1.8.2",
     "jquery": "^3.3.1",
+    "postprocessing": "^4.6.0",
     "three": "^0.93.0",
+    "three-dragcontrols": "^0.88.2",
+    "three-orbit-controls": "^82.1.0",
+    "three-transformcontrols": "^0.78.1",
     "watchjs": "0.0.0"
   }
 }

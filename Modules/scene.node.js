@@ -12,6 +12,11 @@ const path = require("path");
 const crypto = require("crypto");
 //const THREE = require("three");
 
+const DragControls = require("three-dragcontrols");
+const TransformControls = require("three-transformcontrols");
+const OrbitControls = require('three-orbit-controls')(THREE);
+const Postprocessing = require("postprocessing");
+
 module.exports = class{
 
     constructor(){
@@ -27,8 +32,6 @@ module.exports = class{
         this.container = null;
         this.renderer = null;
         this.camera = null;
-        this.pCamera = null;
-        this.pCameraHelper = null;
         this.scene = null;
         this.raycaster = null;
         this.mouse = null;
@@ -36,6 +39,13 @@ module.exports = class{
         this.helper = new Array();
         this.rotation = { x: 45, y: 45, z: 0 };
         this.editor = null;
+        this.control = null;
+        this.orbit = null;
+
+        this.composer = null;
+        this.renderPass = null;
+        this.outlinePass = null;
+
     }
 
     destroy() {
@@ -102,6 +112,19 @@ module.exports = class{
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x222222);
         
+        this.control = new THREE.TransformControls(this.camera, this.renderer.domElement);
+        this.control.update();
+        // this.control.addEventListener('change', () => {
+        //     t.control.update();
+        // });
+        this.scene.add(this.control);
+
+        
+        this.orbit = new OrbitControls(this.camera, this.renderer.domElement);
+        this.orbit.damping = 0.2;
+        this.orbit.mouseButtons.ORBIT = 1;
+        this.orbit.mouseButtons.PAN = 0;
+        this.orbit.mouseButtons.ZOOM = -1;
 
         let calcObject = function(obj){
 
@@ -132,26 +155,9 @@ module.exports = class{
 
         let renderFunction = function(){
             requestAnimationFrame(renderFunction);
-            
-            if(t.pCamera !== null){
-                t.scene.rotation.x = 0;
-                t.scene.rotation.y = 0;
-                t.scene.rotation.z = 0;
-            }
-            else{
-                t.scene.rotation.x = t.rotation.x;
-                t.scene.rotation.y = t.rotation.y;
-                t.scene.rotation.z = t.rotation.z;
-            }
-
             calcObject(t.scene);
-
-            if(t.pCamera !== null){
-                t.renderer.render(t.scene, t.pCamera);
-            }
-            else{
-                t.renderer.render(t.scene, t.camera);
-            }
+            t.renderer.render(t.scene, t.camera);
+            t.control.update();
         }
         renderFunction();
 
@@ -182,82 +188,12 @@ module.exports = class{
     events(){
         let t = this;
 
-        let startX = 0;
-        let startY = 0;
-        let startData = null;
-        let startMouseX = 0;
-        let startMouseY = 0;
-        let keyPress = -1;
-        let type = "";
-        let option = "";
-
         $(document).keypress(function(e){
             if(!$(t.container).is(":hover")){
                 return;
             }
 
-            if(t.selectedObject !== null){
-                if(keyPress > 3){
-                    option = e.key;
-                }
-                else{
-                    startMouseX = null;
-                    startMouseY = null;
 
-                    if(e.key == "g"){
-                        type = "position";
-                        keyPress = 4;
-                    }
-
-                    if(e.key == "r"){
-                        type = "rotation";
-                        keyPress = 4;
-                    }
-
-                    if(e.key == "s"){
-                        type = "scale";
-                        keyPress = 4;
-                    }
-
-                    if(keyPress > 3){
-                        let o = t.selectedObject[type];
-                        startData = { x: o.x, y: o.y, z: o.z };
-                    }
-
-                    if(e.key == "a"){
-                        keyPress = -1;
-                        editor.selected = { type: "none" };
-                        t.selectedObject = null;
-                    }
-                    
-                    if(e.key == "d"){
-
-                        let parent = t.foundParent(t.selectedObject.uuid, t.scene);
-
-                        if(parent !== null){
-                            let o = t.selectedObject.clone();
-                            parent.add(o);
-                            CallFunctionFromModules("changeDataCallback");
-                            editor.selected = {
-                                type: "object",
-                                uuid: o.uuid
-                            };
-                        }
-                        else{
-                            console.log("Error while clone, don't found parent");
-                        }
-
-                    }
-
-                    if(e.key == "p"){
-                        if(String(t.selectedObject.type).indexOf("Camera") > -1){
-                            t.selectedObject.children = [];
-                            t.pCamera = t.selectedObject;
-                        }
-                    }
-
-                }
-            }
         });
 
         $(document).keyup(function(e){
@@ -265,176 +201,55 @@ module.exports = class{
                 return;
             }
 
-            if(e.key == "p"){
-                if(String(t.selectedObject.type).indexOf("Camera") > -1){
-                    t.pCamera = null;
-                }
-            }
-
-            if(t.selectedObject !== null){
-
-                if(e.keyCode == 46) {
-
-                    let parent = t.foundParent(t.selectedObject.uuid, t.scene);
-
-                    if(parent !== null){
-                        parent.remove(t.selectedObject);
-                        CallFunctionFromModules("changeDataCallback");
-                        editor.selected = { type: "none" };
-                    }
-                    else{
-                        console.log("Error while delete, don't found parent");
-                    }
-
-                }
-
-            }
         });
 
         $(this.container).children(".context_scene_webgl").bind("mousedown", function(e){
-            if(keyPress > 3){
-                if(e.button == 2){
-                    t.selectedObject[type].x = startData.x;
-                    t.selectedObject[type].y = startData.y;
-                    t.selectedObject[type].z = startData.z;
-                }
-                keyPress = -1;
-                option = "";
-            }
-            else{
-                keyPress = e.button;
-                startMouseX = e.pageX;
-                startMouseY = e.pageY;
+            if(e.button == 2){
+                t.mouse.x = ( (e.pageX - t.container.offset().left) / t.container.width() ) * 2 - 1;
+                t.mouse.y = - ( (e.pageY - t.container.offset().top) / t.container.height() ) * 2 + 1;
 
-                if(keyPress == 1){
-                    startX = t.rotation.x;
-                    startY = t.rotation.y;
-                }
+                t.raycaster.setFromCamera(t.mouse, t.camera);
+                let intersects = t.raycaster.intersectObjects(t.scene.children, true);
+                let found = false;
+                for ( let i = 0; i < intersects.length; i++ ){
+                    // if(String(intersects[i].object.name).indexOf("Helper") > -1){
+                    //     let id = undefined;
+                    //     if(intersects[i].object.EID !== undefined){
+                    //         id = intersects[i].object.EID;
+                    //     }
+                    //     else{
+                    //         id = intersects[i].object.parent.EID;
+                    //     }
+                        
+                    //     if(id !== undefined){
+                    //         if(t.editor.selected !== null && t.editor.selected.uuid == id){
+                    //             t.editor.selected = { type: "none" };
+                    //         }
+                    //         else{
+                    //             t.editor.selected = {
+                    //                 type: "object",
+                    //                 uuid: id, 
+                    //             };
+                    //         }
+                    //         break;
+                    //     }
+                    // }
 
-                if(keyPress == 1 && t.pCamera !== null){
-                    keyPress = -1;
-                }
+                    if(intersects[i].object.type == "Mesh"){
+                        console.log("OK");
+                        t.editor.selected = {
+                            type: "object",
+                            uuid: intersects[i].object.uuid, 
+                        };
 
-                if(keyPress == 2){
-                    t.mouse.x = ( (e.pageX - t.container.offset().left) / t.container.width() ) * 2 - 1;
-                    t.mouse.y = - ( (e.pageY - t.container.offset().top) / t.container.height() ) * 2 + 1;
+                        t.scene.
 
-                    t.raycaster.setFromCamera(t.mouse, t.camera);
-                    let intersects = t.raycaster.intersectObjects(t.scene.children, true);
-                    let found = false;
-                    for ( let i = 0; i < intersects.length; i++ ){
-                        if(String(intersects[i].object.name).indexOf("Helper") > -1){
-                            let id = undefined;
-                            if(intersects[i].object.EID !== undefined){
-                                id = intersects[i].object.EID;
-                            }
-                            else{
-                                id = intersects[i].object.parent.EID;
-                            }
-                           
-                            if(id !== undefined){
-                                if(t.editor.selected !== null && t.editor.selected.uuid == id){
-                                    t.editor.selected = { type: "none" };
-                                }
-                                else{
-                                    t.editor.selected = {
-                                        type: "object",
-                                        uuid: id, 
-                                    };
-                                }
-                                break;
-                            }
-                        }
+                        //t.control.detach();
+                        t.control.attach(intersects[i].object);
+                        t.control.update();
 
-                        if(intersects[i].object.type == "Mesh"){
-                            t.editor.selected = {
-                                type: "object",
-                                uuid: intersects[i].object.uuid, 
-                            };
-                            break;
-                        }
+                        break;
                     }
-                }
-            }
-        });
-
-        $(this.container).children(".context_scene_webgl").bind("mousemove", function(e){
-
-            if(keyPress == 1){
-                t.rotation.y = startY + ((e.pageX - startMouseX)*0.5) * Math.PI / 180;
-                t.rotation.x = startX + ((e.pageY - startMouseY)*0.5) * Math.PI / 180;
-            }
-
-            if(keyPress > 3){
-                if(startMouseX == null || startMouseY == null){
-                    startMouseX = e.pageX;
-                    startMouseY = e.pageY;
-                }
-
-                let m = 0.01;
-                if(e.shiftKey){
-                    m = 0.001;
-                }
-                let r = ( (e.pageX - startMouseX) + (e.pageY - startMouseY) ) * m;
-
-                let d = { x: r, y: r, z: r };
-
-                if(type == "position"){
-                    let matrix = new THREE.Matrix4();
-                    matrix = matrix.extractRotation(t.scene.matrix);
-                    let dir = new THREE.Vector3( 1, 1, 1 ).applyMatrix4(matrix);
-
-                    d = {
-                        x: dir.x * (e.pageX - startMouseX) * (m * 10),
-                        y: -dir.y * (e.pageY - startMouseY) * (m * 10),
-                        z: r, 
-                    }
-                }
-
-                if(type == "rotation"){
-                    d = {
-                        x: (e.pageY - startMouseY) * m,
-                        y: (e.pageX - startMouseX) * m,
-                        z: r, 
-                    }
-                }
-
-                if(option == "x"){
-                    t.selectedObject[type].x = startData.x + d.x;
-                }
-                else if(option == "y"){
-                    t.selectedObject[type].y = startData.y + d.y;
-                }
-                else if(option == "z"){
-                    t.selectedObject[type].z = startData.z + d.z;
-                }
-                else{
-                    t.selectedObject[type].x = startData.x + d.x;
-                    t.selectedObject[type].y = startData.y + d.y;
-                    t.selectedObject[type].z = startData.z + d.z;
-                }
-
-                t.selectedObject.updateMatrix();
-
-            }
-        });
-
-        $(this.container).children(".context_scene_webgl").bind("mouseup", function(e){
-            keyPress = -1;
-            option = "";
-        });
-
-        $(this.container).bind("mousewheel", function(e) {
-            if(e.ctrlKey){
-                t.camera.position.x += e.deltaY * 0.5;
-            }
-            else if(e.shiftKey){
-                t.camera.position.y += e.deltaY * 0.5;
-            }
-            else{
-                t.camera.position.z -= e.deltaY * 0.5;
-                if(t.camera.position.z <= 0){
-                    t.camera.position.z = 0.01;
                 }
             }
         });
@@ -455,7 +270,7 @@ module.exports = class{
         help.name = "Helper_" + obj.uuid;
         help["EID"] = obj.uuid;
 
-        if(obj.type == "Object3D" || obj.type == "Group"){
+        if(obj.type == "Group"){
             let box = new THREE.Box3();
             box.setFromCenterAndSize(new THREE.Vector3(0,0,0), new THREE.Vector3(0.3,0.3,0.3));
             let h = new THREE.Box3Helper(box, 0xffff00);
@@ -465,18 +280,22 @@ module.exports = class{
         }
 
         if(obj.type == "Mesh"){
-            obj.geometry.computeBoundingSphere();
-            let r = obj.geometry.boundingSphere.radius * 1.5;
-            let c = obj.geometry.boundingSphere.center;
-            let box = new THREE.Box3();
-            box.setFromCenterAndSize(new THREE.Vector3(c.x, c.y, c.z), new THREE.Vector3(r,r,r));
-            let h = new THREE.Box3Helper(box, 0xffff00);
-            h.name = "Helper";
-            h.matrixAutoUpdate = true;
-            help.add(h);
+            // this.control.detach();
+            // this.control.attach(obj);
+            // obj.geometry.computeBoundingSphere();
+            // let r = obj.geometry.boundingSphere.radius * 1.5;
+            // let c = obj.geometry.boundingSphere.center;
+            // let box = new THREE.Box3();
+            // box.setFromCenterAndSize(new THREE.Vector3(c.x, c.y, c.z), new THREE.Vector3(r,r,r));
+            // let h = new THREE.Box3Helper(box, 0xffff00);
+            // h.name = "Helper";
+            // h.matrixAutoUpdate = true;
+            // help.add(h);
 
-            obj.castShadow = true;
-            obj.receiveShadow = true;
+            // obj.castShadow = true;
+            // obj.receiveShadow = true;
+
+            console.log("OK");
         }
 
         if(obj.type == "PerspectiveCamera"){
