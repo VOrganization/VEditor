@@ -716,9 +716,9 @@ module.exports = class{
         }
 
         matC.children(".material_map_diffuse").val(t.getTextureValue(mat.map));
-        matC.children(".material_color_diffuse").spectrum("set", mat.color.getHexString());
+        //matC.children(".material_color_diffuse").spectrum("set", mat.color.getHexString());
         matC.children(".material_map_emission").val(t.getTextureValue(mat.emissiveMap));
-        matC.children(".material_color_emission").spectrum("set", mat.emissive.getHexString());
+        //matC.children(".material_color_emission").spectrum("set", mat.emissive.getHexString());
         matC.children(".material_int_emission").val(mat.emissiveIntensity);
         matC.children(".material_refraction").val(mat.refractionRatio);
         matC.children(".material_normal_map").val(t.getTextureValue(mat.normalMap));
@@ -742,7 +742,7 @@ module.exports = class{
             matC.children(".pbr").hide();
             matC.children(".material_type").val("Phong");
             matC.children(".material_reflection").val(mat.reflectivity);
-            matC.children(".material_color_specular").spectrum("set", mat.specular.getHexString());
+            //matC.children(".material_color_specular").spectrum("set", mat.specular.getHexString());
             matC.children(".material_map_specular").val(t.getTextureValue(mat.specularMap));
             matC.children(".material_shi_specular").val(mat.shininess);
         }

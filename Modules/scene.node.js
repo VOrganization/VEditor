@@ -40,6 +40,7 @@ module.exports = class{
         this.rotation = { x: 45, y: 45, z: 0 };
         this.editor = null;
         this.control = null;
+        this.controls = new Array();
         this.orbit = null;
 
         this.composer = null;
@@ -112,13 +113,7 @@ module.exports = class{
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x222222);
         
-        this.control = new THREE.TransformControls(this.camera, this.renderer.domElement);
-        this.control.update();
-        // this.control.addEventListener('change', () => {
-        //     t.control.update();
-        // });
-        this.scene.add(this.control);
-
+        this.control = null;
         
         this.orbit = new OrbitControls(this.camera, this.renderer.domElement);
         this.orbit.damping = 0.2;
@@ -156,8 +151,10 @@ module.exports = class{
         let renderFunction = function(){
             requestAnimationFrame(renderFunction);
             calcObject(t.scene);
+            if(t.control !== null){
+                t.control.update();
+            }
             t.renderer.render(t.scene, t.camera);
-            t.control.update();
         }
         renderFunction();
 
@@ -193,6 +190,23 @@ module.exports = class{
                 return;
             }
 
+            if(e.key == "g"){
+                t.control.setMode( "translate" );
+            }
+
+            if(e.key == "r"){
+                t.control.setMode("rotate");
+            }
+
+            if(e.key == "s"){
+                t.control.setMode("scale");
+            }
+
+            if(e.key == "a"){
+                t.editor.selected = {
+                    type: "none"
+                };
+            }
 
         });
 
@@ -204,54 +218,38 @@ module.exports = class{
         });
 
         $(this.container).children(".context_scene_webgl").bind("mousedown", function(e){
-            if(e.button == 2){
-                t.mouse.x = ( (e.pageX - t.container.offset().left) / t.container.width() ) * 2 - 1;
-                t.mouse.y = - ( (e.pageY - t.container.offset().top) / t.container.height() ) * 2 + 1;
-
-                t.raycaster.setFromCamera(t.mouse, t.camera);
-                let intersects = t.raycaster.intersectObjects(t.scene.children, true);
-                let found = false;
-                for ( let i = 0; i < intersects.length; i++ ){
-                    // if(String(intersects[i].object.name).indexOf("Helper") > -1){
-                    //     let id = undefined;
-                    //     if(intersects[i].object.EID !== undefined){
-                    //         id = intersects[i].object.EID;
-                    //     }
-                    //     else{
-                    //         id = intersects[i].object.parent.EID;
-                    //     }
-                        
-                    //     if(id !== undefined){
-                    //         if(t.editor.selected !== null && t.editor.selected.uuid == id){
-                    //             t.editor.selected = { type: "none" };
-                    //         }
-                    //         else{
-                    //             t.editor.selected = {
-                    //                 type: "object",
-                    //                 uuid: id, 
-                    //             };
-                    //         }
-                    //         break;
-                    //     }
-                    // }
-
-                    if(intersects[i].object.type == "Mesh"){
-                        console.log("OK");
-                        t.editor.selected = {
-                            type: "object",
-                            uuid: intersects[i].object.uuid, 
-                        };
-
-                        t.scene.
-
-                        //t.control.detach();
-                        t.control.attach(intersects[i].object);
-                        t.control.update();
-
-                        break;
-                    }
-                }
+            if(e.button != 2){
+                return;
             }
+            
+            t.mouse.x = ( (e.pageX - t.container.offset().left) / t.container.width() ) * 2 - 1;
+            t.mouse.y = - ( (e.pageY - t.container.offset().top) / t.container.height() ) * 2 + 1;
+
+            t.raycaster.setFromCamera(t.mouse, t.camera);
+
+            let objects = new Array();
+            t.scene.traverse((obj) => {
+                try {
+                    let is_helper = obj.parent.parent instanceof THREE.TransformGizmoTranslate || obj.parent.parent instanceof THREE.TransformGizmoScale || obj.parent.parent instanceof THREE.TransformGizmoRotate;
+                    if(obj.type == "Mesh" && !is_helper){
+                        objects.push(obj);
+                    }    
+                } catch (error) {
+                    
+                }    
+            });
+
+
+            let intersects = t.raycaster.intersectObjects(objects, true);
+            console.log(intersects[0]);
+            if(intersects[0]){
+                t.editor.selected = {
+                    type: "object",
+                    uuid: intersects[0].object.uuid, 
+                };
+            }
+
+
         });
     }
 
@@ -260,75 +258,80 @@ module.exports = class{
             return;
         }
 
-        for (let i = 0; i < obj.children.length; i++) {
-            if(String(obj.children[i].name).indexOf("Helper") > -1){
-                obj.remove(obj.children[i]);
-            }
-        }
+        // let helper = new THREE.Group();
+        // helper.name = "TEST";
+        // obj.add(helper);
 
-        let help = new THREE.AxesHelper(1);
-        help.name = "Helper_" + obj.uuid;
-        help["EID"] = obj.uuid;
+        // for (let i = 0; i < obj.children.length; i++) {
+        //     if(String(obj.children[i].name).indexOf("Helper") > -1){
+        //         obj.remove(obj.children[i]);
+        //     }
+        // }
 
-        if(obj.type == "Group"){
-            let box = new THREE.Box3();
-            box.setFromCenterAndSize(new THREE.Vector3(0,0,0), new THREE.Vector3(0.3,0.3,0.3));
-            let h = new THREE.Box3Helper(box, 0xffff00);
-            h.name = "Helper";
-            h.matrixAutoUpdate = true;
-            help.add(h);
-        }
+        // //let help = new THREE.AxesHelper(1);
+        // let help = new THREE.Object3D();
+        // help.name = "Helper_" + obj.uuid;
+        // help["EID"] = obj.uuid;
 
-        if(obj.type == "Mesh"){
-            // this.control.detach();
-            // this.control.attach(obj);
-            // obj.geometry.computeBoundingSphere();
-            // let r = obj.geometry.boundingSphere.radius * 1.5;
-            // let c = obj.geometry.boundingSphere.center;
-            // let box = new THREE.Box3();
-            // box.setFromCenterAndSize(new THREE.Vector3(c.x, c.y, c.z), new THREE.Vector3(r,r,r));
-            // let h = new THREE.Box3Helper(box, 0xffff00);
-            // h.name = "Helper";
-            // h.matrixAutoUpdate = true;
-            // help.add(h);
+        // if(obj.type == "Group"){
+        //     let box = new THREE.Box3();
+        //     box.setFromCenterAndSize(new THREE.Vector3(0,0,0), new THREE.Vector3(0.3,0.3,0.3));
+        //     let h = new THREE.Box3Helper(box, 0xffff00);
+        //     h.name = "Helper";
+        //     h.matrixAutoUpdate = true;
+        //     help.add(h);
+        // }
 
-            // obj.castShadow = true;
-            // obj.receiveShadow = true;
+        // if(obj.type == "Mesh"){
+        //     // this.control.detach();
+        //     // this.control.attach(obj);
+        //     // obj.geometry.computeBoundingSphere();
+        //     // let r = obj.geometry.boundingSphere.radius * 1.5;
+        //     // let c = obj.geometry.boundingSphere.center;
+        //     // let box = new THREE.Box3();
+        //     // box.setFromCenterAndSize(new THREE.Vector3(c.x, c.y, c.z), new THREE.Vector3(r,r,r));
+        //     // let h = new THREE.Box3Helper(box, 0xffff00);
+        //     // h.name = "Helper";
+        //     // h.matrixAutoUpdate = true;
+        //     // help.add(h);
 
-            console.log("OK");
-        }
+        //     // obj.castShadow = true;
+        //     // obj.receiveShadow = true;
 
-        if(obj.type == "PerspectiveCamera"){
-            obj.aspect = (this.container.width() / this.container.height());
-            let h = new THREE.CameraHelper(obj);
-            h.name = "Helper";
-            h.matrixAutoUpdate = true;
-            help.add(h);
-        }
+        //     console.log("OK");
+        // }
 
-        if(obj.type == "PointLight"){
-            let h = new THREE.Mesh(new THREE.SphereBufferGeometry( 0.3, 16, 8 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
-            h.name = "Helper";
-            h.matrixAutoUpdate = true;
-            help.add(h);
-        }
+        // if(obj.type == "PerspectiveCamera"){
+        //     obj.aspect = (this.container.width() / this.container.height());
+        //     let h = new THREE.CameraHelper(obj);
+        //     h.name = "Helper";
+        //     h.matrixAutoUpdate = true;
+        //     help.add(h);
+        // }
 
-        if(obj.type == "SpotLight"){
-            let h = new THREE.Mesh(new THREE.ConeBufferGeometry( 1, 4, 32 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
-            h.name = "Helper";
-            h.matrixAutoUpdate = true;
-            h.position.y = -2;
-            help.add(h);
-        }
+        // if(obj.type == "PointLight"){
+        //     let h = new THREE.Mesh(new THREE.SphereBufferGeometry( 0.3, 16, 8 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
+        //     h.name = "Helper";
+        //     h.matrixAutoUpdate = true;
+        //     help.add(h);
+        // }
 
-        if(obj.type == "DirectionalLight"){
-            let h = new THREE.Mesh(new THREE.BoxBufferGeometry( 5, 0.01, 5 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
-            h.name = "Helper";
-            h.matrixAutoUpdate = true;
-            help.add(h);
-        }
+        // if(obj.type == "SpotLight"){
+        //     let h = new THREE.Mesh(new THREE.ConeBufferGeometry( 1, 4, 32 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
+        //     h.name = "Helper";
+        //     h.matrixAutoUpdate = true;
+        //     h.position.y = -2;
+        //     help.add(h);
+        // }
 
-        obj.add(help);
+        // if(obj.type == "DirectionalLight"){
+        //     let h = new THREE.Mesh(new THREE.BoxBufferGeometry( 5, 0.01, 5 ), new THREE.MeshBasicMaterial({ color: obj.color, transparent: true, opacity: 0.3 }));
+        //     h.name = "Helper";
+        //     h.matrixAutoUpdate = true;
+        //     help.add(h);
+        // }
+
+        // obj.add(help);
 
         for (let i = 0; i < obj.children.length; i++) {
             if(obj.children[i].type == "LineSegments" || obj.children[i].type == "AmbientLight" || obj.children[i].name == "Helper"){
@@ -340,6 +343,8 @@ module.exports = class{
 
     updateData(editor){
         if(editor.project.scene.data !== undefined || editor.project.scene.data !== null){
+            let t = this;
+
             let found = false;
             for (let i = 0; i < editor.project.scene.data.children.length; i++) {
                 if(editor.project.scene.data.children[i].name == "Grid"){
@@ -354,6 +359,12 @@ module.exports = class{
             }
             this.calcHelper(editor.project.scene.data);
             this.scene = editor.project.scene.data;
+
+
+            t.control = new THREE.TransformControls(t.camera, t.renderer.domElement);
+            t.control.update();
+            t.control.name = "Helper";
+            t.scene.add(t.control);
         }
         else{
             this.scene = new THREE.Scene();
@@ -361,61 +372,17 @@ module.exports = class{
         }
     }
 
-    updateHelper(uuid, obj, t){
-        let ch = false;
-
-        if(obj.uuid == uuid){
-            this.selectedObject = obj;
-        }
-
-        if(String(obj.name).indexOf("Helper") > -1){
-            if(obj.EID == uuid){
-                if(obj.material !== undefined){
-                    obj.material.color.r = 0;
-                    obj.material.color.g = 0;
-                    obj.material.color.b = 1;
-                }
-                ch = true;
-            }
-            else{
-                if(t){
-                    if(obj.material !== undefined){
-                        obj.material.color.r = 0;
-                        obj.material.color.g = 0;
-                        obj.material.color.b = 1;
-                    }
-                }
-                else{
-                    if(obj.parent.parent !== null && String(obj.parent.parent.type).indexOf("Light") > -1){
-                        if(obj.material !== undefined){
-                            obj.material.color.r = obj.parent.parent.color.r;
-                            obj.material.color.g = obj.parent.parent.color.g;
-                            obj.material.color.b = obj.parent.parent.color.b;
-                        }
-                    }
-                    else{
-                        if(obj.material !== undefined){
-                            obj.material.color.r = 1;
-                            obj.material.color.g = 1;
-                            obj.material.color.b = 0;
-                        }
-                    }
-                }
-            }
-        }
-
-
-        for (let i = 0; i < obj.children.length; i++) {
-            this.updateHelper(uuid, obj.children[i], ch);
-        }
-    }
-
     updateSelected(editor){
         if(editor.selected.type == "object"){
-            this.updateHelper(editor.selected.uuid, editor.project.scene.data);
+            this.scene.traverse((obj) => {
+                if(obj.uuid == editor.selected.uuid){
+                    this.control.detach();
+                    this.control.attach(obj);
+                }
+            })
         }
         else{
-            this.updateHelper("", editor.project.scene.data, false);
+            this.control.detach();
             this.selectedObject = null;
         }
     }
