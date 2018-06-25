@@ -3,6 +3,19 @@ const path = require("path");
 
 window.$ = window.jQuery = require('jquery');
 
+async function walk(p, fun){
+    let items = fs.readdirSync(p);
+    for (let i = 0; i < items.length; i++) {
+        let item = path.join(p, items[i]);
+        if(fs.lstatSync(item).isDirectory()){
+            walk(item, fun);
+        }
+        else{
+            fun(item);
+        }
+    }
+}
+
 module.exports = class{
 
     constructor(){
@@ -38,79 +51,37 @@ module.exports = class{
         return path_dir;
     }
 
-    _scan_dir(editor, p, pp){
-        let t = this;
-        try {
-            fs.readdir(String(p), function(err, files){
-                if(err !== null){
-                    console.log("Error while scaning dirs SEC");
-                    console.log(err);
-                }
-                else{
-                    for (let i = 0; i < files.length; i++) {
-                        let glob;
-                        if(pp == undefined){
-                            glob = path.join(String(editor.project.dirname), files[i]);
-                        }
-                        else{
-                            glob = path.join(pp, files[i]);
-                        }
-                        
-                        if(!fs.existsSync(glob)){
-                            continue;
-                        }
-
-                        if(fs.lstatSync(glob).isDirectory()){
-                            t._scan_dir(editor, glob, glob);
-                        }
-                        else{
-                            let found = false;
-                            let main_p = path.relative(editor.project.dirname, glob);
-                            let ext = path.extname(main_p);
-                            let name = path.basename(main_p, ext);
-                            let type = findFileType(ext);
-                            for (let j = 0; j < editor.project.files.length; j++) {
-                                if(!fs.existsSync(path.join(editor.project.dirname, editor.project.files[j].path))){
-                                    editor.project.files.splice(j, 1);
-                                }
-
-                                if(editor.project.files[j].type === "" || editor.project.files[j].type === null){
-                                    editor.project.files[j].type = findFileType(editor.project.files[j].ext);
-                                }
-
-                                if(editor.project.files[j].data == null || editor.project.files[j].data == undefined){
-                                    loadFile(editor.project.files[j]);
-                                }
-
-                                if(editor.project.files[j].path == main_p){
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if(!found){
-                                console.log("OK");
-                                editor.project.files.push({
-                                    type: type,
-                                    name: name,
-                                    ext: ext,
-                                    path: main_p,
-                                    data: null
-                                });
-                                loadFile(editor.project.files[editor.project.files.length - 1]);
-                            }
-                        }
-                    }
-                }
-            });   
-        } catch (error) {
-            console.log("Error while scaning dirs");
-            console.log(error);
-        }
-    }
-
     scanDir(editor){
-        console.log("scan dir");
-        this._scan_dir(editor, editor.dirname);
+        walk(editor.project.dirname, function(file){
+            let found = false;
+            let main_p = path.relative(editor.project.dirname, file);
+            let ext = path.extname(main_p);
+            let name = path.basename(main_p, ext);
+            let type = findFileType(ext);
+            for (let j = 0; j < editor.project.files.length; j++) {
+                if(!fs.existsSync(path.join(editor.project.dirname, editor.project.files[j].path))){
+                    editor.project.files.splice(j, 1);
+                }
+
+                if(editor.project.files[j].type === "" || editor.project.files[j].type === null){
+                    editor.project.files[j].type = findFileType(editor.project.files[j].ext);
+                }
+
+                if(editor.project.files[j].path == main_p){
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                editor.project.files.push({
+                    type: type,
+                    name: name,
+                    ext: ext,
+                    path: main_p,
+                    data: null
+                });
+            }
+        });
     }
 
     createWatcher(editor){
@@ -118,10 +89,10 @@ module.exports = class{
             this.watcher.close();
         }
         try {
-            let c = this;
-            let uc = this.UpdateContext;
+            let t = this;
             let u = function(){
-                uc(editor, c);
+                t.scanDir(editor);
+                t.addElements(editor);
             }
             this.watcher = fs.watch(editor.project.dirname, {}, u);   
         } catch (error) {
@@ -188,10 +159,6 @@ module.exports = class{
 
     }
 
-    UpdateContext(editor, c){
-        c.addElements(editor);
-        c.scanDir(editor);
-    }
 
     Update(editor){
         this.createWatcher(editor);

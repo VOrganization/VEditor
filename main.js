@@ -9,6 +9,7 @@ const WebContext = remote.getCurrentWebContents();
 
 const fs = require("fs");
 const path = require("path");
+const VProject = require("./NativeLibraries/VProject");
 
 // Init Layout
 {
@@ -96,9 +97,8 @@ const path = require("path");
                             ]
                         }, function(file){
                             if(file !== undefined){
-                                editor.filename = String(file);
-                                editor.dirname = path.dirname(editor.filename);
-                                CallFunctionFromModules("loadCallback");
+                                editor.project = VProject.load(String(file), editor);
+                                VProject.afterLoad(editor.project, editor);
                             }
                         });
                     }

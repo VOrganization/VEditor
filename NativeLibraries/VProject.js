@@ -2,9 +2,11 @@ const fs = require("fs");
 const path = require("path");
 
 function load(p, editor){
+    console.log("Load");
+    console.log(p);
     let data = JSON.parse(fs.readFileSync(p));
-    data["filename"] = p;
-    data["dirname"] = path.dirname(p);
+    data["filename"] = String(p);
+    data["dirname"] = path.dirname(String(p));
     console.log(data);
 
 
