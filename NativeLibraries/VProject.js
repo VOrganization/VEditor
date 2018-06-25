@@ -24,7 +24,7 @@ function afterLoad(project, editor){
                 loaded.push(m.id);
             }
             else{
-                console.log("Error: Don't have Load function");
+                console.log("Error: Don't have Load function: " + m.name);
             }
         }
         else{
@@ -41,7 +41,17 @@ function afterLoad(project, editor){
             m.Load(editor);
         }
         else{
-            console.log("Error: Don't have Load function");
+            console.log("Error: Don't have Load function: " + m.name);
+        }
+    }
+
+    for (let i = 0; i < editor.modulesUsage.length; i++) {
+        let m = editor.modulesUsage[i];
+        if(m.Update !== undefined){
+            m.Update(editor);
+        }
+        else{
+            console.log("Error: Don't have Update function: " + m.name);
         }
     }
 }

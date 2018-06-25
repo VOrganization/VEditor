@@ -33,6 +33,7 @@ module.exports = class{
         this.renderer = null;
         this.camera = null;
         this.scene = null;
+        this.senePath = null;
         this.raycaster = null;
         this.mouse = null;
         this.editor = null;
@@ -121,7 +122,7 @@ module.exports = class{
 
     events(){
         let t = this;
-        let menuL =  $(t.container).children(".context_scene_nav").children(".context_scene_nav_right");
+        let menuL =  $(t.container).children(".context_scene_nav").children(".context_scene_nav_left");
         let menuR =  $(t.container).children(".context_scene_nav").children(".context_scene_nav_right");
 
         menuL.children(".scene_move").click(() => {
@@ -142,23 +143,50 @@ module.exports = class{
             menuL.children(".scene_scale").addClass("scene_active");
         });
 
-        menuL.children(".scene_find_file").click((e) => {
+        menuR.children(".scene_find_file").click((e) => {
 
         });
 
-        menuL.children(".scene_select").change((e) => {
+        menuR.children(".scene_select").change((e) => {
+            console.log("Load Scene");
+            let v = String(menuR.children(".scene_select").val());
+            if(v == "none"){
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x222222);
+                this.senePath = null;
+            }
+            else{
+                // for (let i = 0; i < this.editor.project.files.length; i++) {
+                //     let f = this.editor.project.files[i];
+                //     if(f.path == v){
+                //         if(f.data != null){
+                //             console.log("Load from memory");
+                //         }
+                //         else{
+                //             console.log("Load from File");
+                //         }
+                //         break;
+                //     }
+                // }
+                console.log(v);
+                let p = path.join(this.editor.project.dirname, v);
+                console.log(p);
+                require("../NativeLibraries/VScene").import(p, this.editor.project.files).then((e) => {
+                    console.log("Scene");
+                    console.log(e);
+                });
+            }
+        });
+
+        menuR.children(".scene_copy").click((e) => {
 
         });
 
-        menuL.children(".scene_copy").click((e) => {
+        menuR.children(".scene_remove").click((e) => {
 
         });
 
-        menuL.children(".scene_remove").click((e) => {
-
-        });
-
-        menuL.children(".scene_add").click((e) => {
+        menuR.children(".scene_add").click((e) => {
             dialog.showSaveDialog(Window, {
                 title: "Create Scene File",
                 filters: [
@@ -384,10 +412,23 @@ module.exports = class{
         }
     }
 
+    Update(editor){
+        let scene_list = $(this.container).children(".context_scene_nav").children(".context_scene_nav_right").children(".scene_select");
+        scene_list.html(`<option value="none"></option>`);
+        for (let i = 0; i < editor.project.files.length; i++) {
+            let f = editor.project.files[i];
+            if(f.type == "scene"){
+                scene_list.append(`<option value="`+f.path+`">`+f.name+`</option>`);
+            }
+        }
+
+        
+    }
+
     Load(editor){
 
 
-        
+
     }
 
 }
