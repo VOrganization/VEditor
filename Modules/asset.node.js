@@ -41,7 +41,7 @@ module.exports = class{
     _scan_dir(editor, p, pp){
         let t = this;
         try {
-            fs.readdir(p, function(err, files){
+            fs.readdir(String(p), function(err, files){
                 if(err !== null){
                     console.log("Error while scaning dirs SEC");
                     console.log(err);
@@ -50,10 +50,14 @@ module.exports = class{
                     for (let i = 0; i < files.length; i++) {
                         let glob;
                         if(pp == undefined){
-                            glob = path.join(editor.dirname, files[i]);
+                            glob = path.join(String(editor.project.dirname), files[i]);
                         }
                         else{
                             glob = path.join(pp, files[i]);
+                        }
+                        
+                        if(!fs.existsSync(glob)){
+                            continue;
                         }
 
                         if(fs.lstatSync(glob).isDirectory()){
@@ -61,12 +65,12 @@ module.exports = class{
                         }
                         else{
                             let found = false;
-                            let main_p = path.relative(editor.dirname, glob);
+                            let main_p = path.relative(editor.project.dirname, glob);
                             let ext = path.extname(main_p);
                             let name = path.basename(main_p, ext);
                             let type = findFileType(ext);
                             for (let j = 0; j < editor.project.files.length; j++) {
-                                if(!fs.existsSync(path.join(editor.dirname, editor.project.files[j].path))){
+                                if(!fs.existsSync(path.join(editor.project.dirname, editor.project.files[j].path))){
                                     editor.project.files.splice(j, 1);
                                 }
 
@@ -84,6 +88,7 @@ module.exports = class{
                                 }
                             }
                             if(!found){
+                                console.log("OK");
                                 editor.project.files.push({
                                     type: type,
                                     name: name,
@@ -118,7 +123,7 @@ module.exports = class{
             let u = function(){
                 uc(editor, c);
             }
-            this.watcher = fs.watch(editor.dirname, {}, u);   
+            this.watcher = fs.watch(editor.project.dirname, {}, u);   
         } catch (error) {
             console.log("Error while creating watcher");
             console.log(error);
@@ -130,16 +135,16 @@ module.exports = class{
 
         let list = new Array();
         try {
-            list = fs.readdirSync(path.join(editor.dirname, this.calcPath()));
+            list = fs.readdirSync(path.join(String(editor.project.dirname), this.calcPath()));
         } catch (error) {
             console.log("Error while reading editor dir");
             console.log(error);
         }
 
         for (let i = 0; i < list.length; i++) {
-            let p = path.join(editor.dirname, this.calcPath(), list[i]);
+            let p = path.join(editor.project.dirname, this.calcPath(), list[i]);
             
-            if(p == editor.filename){
+            if(p == editor.project.filename){
                 continue;
             }
 
@@ -210,4 +215,9 @@ module.exports = class{
     setContainer(jqueryObject){
         this.container = jqueryObject;
     }
+
+    Load(editor){
+        this.Update(editor);
+    }
+
 }

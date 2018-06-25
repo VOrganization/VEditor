@@ -21,19 +21,15 @@
 
         <script type="text/javascript">
         let editor = {
-            THREE: null,
             modules: new Array(),
             modulesUsage: new Array(),
             defaultLayout: null,
             layout: null,
-            filename: null,
-            dirname: null,
-            project: null,
+            project: {
+                filename: null,
+                dirname: null,
+            },
             selected: { type: "none" },
-            export: {
-                full: false,
-                type: null
-            }
         };
         </script>
 

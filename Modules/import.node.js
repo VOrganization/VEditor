@@ -82,11 +82,11 @@ module.exports = class{
     }
 
     loadCB(editor){
-        if(editor.project.scene === null || editor.project.scene === undefined || editor.project.scene.file == null || editor.project.scene.file == undefined){
-            return;
-        }
+        // if(editor.project.scene === null || editor.project.scene === undefined || editor.project.scene.file == null || editor.project.scene.file == undefined){
+        //     return;
+        // }
 
-        editor.project.scene.data = this.import(path.join(editor.dirname, editor.project.scene.file), editor);
+        // editor.project.scene.data = this.import(path.join(editor.dirname, editor.project.scene.file), editor);
     }
 
     importCB(editor){
