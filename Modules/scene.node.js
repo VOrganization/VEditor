@@ -91,24 +91,24 @@ module.exports = class{
                 t.renderer.setSize(p_w, p_h);
             }
 
-            t.scene.traverse((obj) => {
+            // t.scene.traverse((obj) => {
 
-                if(obj.name == "Helper" && !(obj instanceof THREE.TransformControls)){
-                    if(obj.update !== undefined){
-                        obj.update();
-                    }
-                }
+            //     if(obj.name == "Helper" && !(obj instanceof THREE.TransformControls)){
+            //         if(obj.update !== undefined){
+            //             obj.update();
+            //         }
+            //     }
 
-                if(obj.type == "SpotLight" || obj.type == "DirectionalLight"){
-                    let matrix = new THREE.Matrix4();
-                    matrix = matrix.extractRotation(obj.matrix);
-                    let dir = new THREE.Vector3(0, -1, 0).applyMatrix4(matrix);
-                    obj.target.position.set(dir.x + obj.position.x, dir.y, dir.z + obj.position.z);
-                    obj.target.name = "Helper";
-                    t.scene.add(obj.target);
-                }
+            //     if(obj.type == "SpotLight" || obj.type == "DirectionalLight"){
+            //         let matrix = new THREE.Matrix4();
+            //         matrix = matrix.extractRotation(obj.matrix);
+            //         let dir = new THREE.Vector3(0, -1, 0).applyMatrix4(matrix);
+            //         obj.target.position.set(dir.x + obj.position.x, dir.y, dir.z + obj.position.z);
+            //         obj.target.name = "Helper";
+            //         t.scene.add(obj.target);
+            //     }
 
-            });
+            // });
 
             if(t.control !== null){
                 t.control.update();
@@ -174,6 +174,7 @@ module.exports = class{
                 require("../NativeLibraries/VScene").import(p, this.editor.project.files).then((e) => {
                     console.log("Scene");
                     console.log(e);
+                    this.scene = e.scene;
                 });
             }
         });
