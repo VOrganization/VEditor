@@ -78,3 +78,32 @@
 .object_list_item_select > .object_list_name{
    color: var(--interactive-color);
 }
+
+.object_list_header{
+    height: 33px;
+    background-color: var(--main-element-color0);
+}
+
+.object_list_header_opt{
+    float: left;
+    margin-top: 5px;
+    height: 23px;
+    background-color: var(--main-element-color1);
+    margin-left: 2px;
+    transition: all 0.2s ease-in-out;
+}
+
+.object_list_header_opt:first-child{
+    margin-left: 5px;
+}
+
+.object_list_header_opt > span{
+    color: var(--main-font-color0);
+    line-height: 23px;
+    transition: color 0.2s ease-in-out;
+    user-select: none;
+}
+
+.object_list_scene{
+    width: calc(100% - 34px);
+}

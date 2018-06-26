@@ -26,8 +26,8 @@ module.exports = class{
         this.html = `scene.html`;
 
         this.loadCallback = null;
-        this.changeDataCallback = this.updateData;
-        this.selectCallback = this.updateSelected;
+        //this.changeDataCallback = this.updateData;
+        //this.selectCallback = this.updateSelected;
 
         this.container = null;
         this.renderer = null;
@@ -156,26 +156,24 @@ module.exports = class{
                 this.senePath = null;
             }
             else{
-                // for (let i = 0; i < this.editor.project.files.length; i++) {
-                //     let f = this.editor.project.files[i];
-                //     if(f.path == v){
-                //         if(f.data != null){
-                //             console.log("Load from memory");
-                //         }
-                //         else{
-                //             console.log("Load from File");
-                //         }
-                //         break;
-                //     }
-                // }
-                console.log(v);
                 let p = path.join(this.editor.project.dirname, v);
-                console.log(p);
-                require("../NativeLibraries/VScene").import(p, this.editor.project.files).then((e) => {
-                    console.log("Scene");
-                    console.log(e);
-                    this.scene = e.scene;
-                });
+                for (let i = 0; i < this.editor.project.files.length; i++) {
+                    let f = this.editor.project.files[i];
+                    if(f.path == v){
+                        if(f.data != null){
+                            this.scene = f.data.scene;
+                        }
+                        else{
+                            require("../NativeLibraries/VScene").import(p, this.editor.project.files).then((e) => {
+                                f.data = e;
+                                this.scene = e.scene;
+                                this.senePath = v;
+                                this.updateData(this.editor);
+                            });
+                        }
+                        break;
+                    }
+                }
             }
         });
 
@@ -294,13 +292,15 @@ module.exports = class{
                     if(obj.name == "Helper"){
                         t.editor.selected = {
                             type: "object",
-                            uuid: obj.OID, 
+                            uuid: obj.OID,
+                            scene: t.senePath,
                         };
                     }
                     else{
                         t.editor.selected = {
                             type: "object",
-                            uuid: obj.uuid, 
+                            uuid: obj.uuid,
+                            scene: t.senePath,
                         };
                     }
                 }
@@ -312,78 +312,63 @@ module.exports = class{
     }
 
     updateData(editor){
-        console.log(editor.project.scene);
-        if(editor.project.scene.file !== undefined){
-            let p = path.join(editor.dirname, editor.project.scene.file);
-            let scene = require("../NativeLibraries/VScene").import(p, editor);
-            console.log("Scene");
-            console.log(scene);
-        }
-        // if(editor.project.scene.data !== undefined || editor.project.scene.data !== null){
-        //     let t = this;
-        //     let found = false;
+        let t = this;
+        let found = false;
 
-        //     this.scene = editor.project.scene.data;
+        t.scene.traverse((obj) => {
+            if(obj.name == "Grid"){
+                found = true;
+            }
 
-        //     t.scene.traverse((obj) => {
-        //         if(obj.name == "Grid"){
-        //             found = true;
-        //         }
+            if(obj.type == "PointLight"){
+                let helper = new THREE.PointLightHelper(obj, 0.5);
+                helper.name = "Helper";
+                helper["OID"] = obj.uuid;
+                t.scene.add(helper);
+            }
 
-        //         if(obj.type == "PointLight"){
-        //             let helper = new THREE.PointLightHelper(obj, 0.5);
-        //             helper.name = "Helper";
-        //             helper["OID"] = obj.uuid;
-        //             t.scene.add(helper);
-        //         }
+            if(obj.type == "SpotLight"){
+                let helper = new THREE.SpotLightHelper(obj);
+                helper.name = "Helper";
+                helper["OID"] = obj.uuid;
+                t.scene.add(helper);
+            }
 
-        //         if(obj.type == "SpotLight"){
-        //             let helper = new THREE.SpotLightHelper(obj);
-        //             helper.name = "Helper";
-        //             helper["OID"] = obj.uuid;
-        //             t.scene.add(helper);
-        //         }
-
-        //         if(obj.type == "DirectionalLight"){
-        //             let helper = new THREE.DirectionalLightHelper(obj, 5);
-        //             helper.name = "Helper";
-        //             helper["OID"] = obj.uuid;
-        //             t.scene.add(helper);
-        //         }
+            if(obj.type == "DirectionalLight"){
+                let helper = new THREE.DirectionalLightHelper(obj, 5);
+                helper.name = "Helper";
+                helper["OID"] = obj.uuid;
+                t.scene.add(helper);
+            }
+            
+            if(obj.type == "Group" || obj.type == "Object3D"){
+                let helper = new THREE.AxesHelper(1);
+                helper.name = "Helper";
+                helper["OID"] = obj.uuid;
                 
-        //         if(obj.type == "Group" || obj.type == "Object3D"){
-        //             let helper = new THREE.AxesHelper(1);
-        //             helper.name = "Helper";
-        //             helper["OID"] = obj.uuid;
-                    
-        //             let box = new THREE.Box3();
-        //             box.setFromCenterAndSize( new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.3, 0.3, 0.3));
-        //             let boxHelper = new THREE.Box3Helper( box, 0xffff00 );
-        //             boxHelper.name = "Helper";
-        //             boxHelper["OID"] = obj.uuid;
-        //             helper.add(boxHelper);
+                let box = new THREE.Box3();
+                box.setFromCenterAndSize( new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.3, 0.3, 0.3));
+                let boxHelper = new THREE.Box3Helper( box, 0xffff00 );
+                boxHelper.name = "Helper";
+                boxHelper["OID"] = obj.uuid;
+                helper.add(boxHelper);
 
-        //             obj.add(helper);
-        //         }
+                obj.add(helper);
+            }
 
 
-        //     });
+        });
 
-        //     if(!found){
-        //         let grid = new THREE.GridHelper(100, 100, 0xffffff, 0x888888);
-        //         grid.name = "Grid";
-        //         editor.project.scene.data.add(grid);
-        //     }
+        if(!found){
+            let grid = new THREE.GridHelper(100, 100, 0xffffff, 0x888888);
+            grid.name = "Grid";
+            this.scene.add(grid);
+        }
 
-        //     t.control = new THREE.TransformControls(t.camera, t.renderer.domElement);
-        //     t.control.update();
-        //     t.control.name = "Helper_TC";
-        //     t.scene.add(t.control);
-        // }
-        // else{
-        //     this.scene = new THREE.Scene();
-        //     this.scene.background = new THREE.Color(0x222222);
-        // }
+        t.control = new THREE.TransformControls(t.camera, t.renderer.domElement);
+        t.control.update();
+        t.control.name = "Helper_TC";
+        t.scene.add(t.control);
     }
 
     updateSelected(editor){
@@ -407,9 +392,13 @@ module.exports = class{
         this.initScene();
     }
 
+    Load(editor, data){
+        this.senePath = data.activeScene;
+    }
+
     Save(editor){
         return {
-
+            activeScene: this.senePath,
         }
     }
 
@@ -422,14 +411,12 @@ module.exports = class{
                 scene_list.append(`<option value="`+f.path+`">`+f.name+`</option>`);
             }
         }
+        if(this.senePath !== null){
+            scene_list.val(this.senePath);
+            scene_list.change();
+        }
 
         
-    }
-
-    Load(editor){
-
-
-
     }
 
 }

@@ -7,8 +7,7 @@ function load(p, editor){
     let data = JSON.parse(fs.readFileSync(p));
     data["filename"] = String(p);
     data["dirname"] = path.dirname(String(p));
-    console.log(data);
-
+    data.files = [];
 
     return data;
 }
@@ -59,15 +58,22 @@ function afterLoad(project, editor){
 function save(p, project, editor){
     let data = {
         layout: editor.layout.toConfig(),
-        files: project.files,
+        files: [],
         datas: [],
         modules: [],
+    }
+
+    for (let i = 0; i < project.files.length; i++) {
+        let f = project.files[i];
+        data.files.push({
+            path: f.path,
+            hash: f.hash,
+        })
     }
 
     for (let i = 0; i < editor.modulesUsage.length; i++) {
         let m = editor.modulesUsage[i];
         if(m.Save !== undefined){
-            console.log(m);
             data.modules.push({
                 id: i,
                 name: m.name,

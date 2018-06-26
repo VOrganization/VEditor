@@ -14,7 +14,8 @@ function CallFunctionFromModules(fun, c){
 }
 
 watch(editor, "selected", function(){
-    CallFunctionFromModules("selectCallback");
+    console.log("UpdateSelect");
+    CallFunctionFromModules("UpdateSelect");
 });
 
 function findFileType(ext){
