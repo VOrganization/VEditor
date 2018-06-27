@@ -21,22 +21,7 @@ module.exports = class{
         this.selectedObject = null;
     }
 
-    destroy() {
-        
-    }
-
-    findObj(uuid, obj){
-        if(obj.uuid == uuid){
-            return obj;
-        }
-        for (let i = 0; i < obj.children.length; i++) {
-            let o = this.findObj(uuid, obj.children[i]);
-            if(o !== null){
-                return o;
-            }
-        }
-        return null;
-    }
+    destroy() {}
 
     showObj(obj, con){
         if(String(obj.name).indexOf("Helper") > -1){
@@ -87,7 +72,7 @@ module.exports = class{
         }
         for (let i = 0; i < editor.project.files.length; i++) {
             let f = editor.project.files[i];
-            if(f.path == editor.selected.scene){
+            if(f.path == this.scenePath){
                 if(f.data !== null){
                     this.selectedScene = f.data.scene;
                 }
@@ -95,7 +80,7 @@ module.exports = class{
                     require("../NativeLibraries/VScene").import(path.join(this.editor.project.dirname, f.path), this.editor.project.files).then((e) => {
                         f.data = e;
                         this.selectedScene = f.data.scene;
-                        this.updateContext();
+                        this.updateContext(editor);
                     });
                 }
                 break;
@@ -109,6 +94,24 @@ module.exports = class{
                 }
                 this.showObj(this.selectedScene.children[i], $(this.container).children(".context"));
             }
+
+            let t = this;
+            $(".object_list_name").click(function(e) {
+                $(".object_list_item").removeClass("object_list_item_select");
+                let uuid = $(this).parent().attr("id");
+                if(editor.selected.type == "object" && editor.selected.uuid == uuid){
+                    editor.selected = {
+                        type: "none",
+                    };
+                }
+                else{
+                    editor.selected = {
+                        type: "object",
+                        uuid: uuid,
+                        scene: t.scenePath,
+                    };
+                }
+            });
         }
     }
 
@@ -127,17 +130,23 @@ module.exports = class{
         });
 
         header.children(".object_list_scene").change(function(e) {
-            if(t.lock){
-                t.scenePath = String($(this).val());
-                t.selectedScene = t.scenePath;
-                t.updateContext();
+            let v = String($(this).val());
+            if(v == "none"){
+                t.scenePath = null;
+                $(t.container).children(".context").html("");
+            }
+            else{
+                t.scenePath = v;
+                t.updateContext(t.editor);
             }
         });
 
     }
 
     Load(editor, data){
-
+        this.lock = data.lock;
+        this.scenePath = data.scenePath;
+        this.Update(editor);
     }
 
     Save(editor){
@@ -148,8 +157,8 @@ module.exports = class{
     }
 
     Update(editor){
-        console.log("Update");
-        let scene_list = $(this.container).children(".object_list_header").children(".object_list_scene");
+        let header = $(this.container).children(".object_list_header");
+        let scene_list = header.children(".object_list_scene");
         scene_list.html(`<option value="none"></option>`);
         for (let i = 0; i < editor.project.files.length; i++) {
             let f = editor.project.files[i];
@@ -157,13 +166,19 @@ module.exports = class{
                 scene_list.append(`<option value="`+f.path+`">`+f.name+`</option>`);
             }
         }
+
+        if(this.scenePath){
+            scene_list.val(this.scenePath);
+        }
+
         if(this.lock){
-            
+            header.children(".object_list_lock").html(`<span class="icon-lock"></span>`);
         }
         else{
-
+            header.children(".object_list_lock").html(`<span class="icon-lock-open"></span>`);
         }
-        this.updateContext();
+
+        this.updateContext(this.editor);
     }
 
     UpdateSelect(editor){
@@ -177,6 +192,7 @@ module.exports = class{
                     $(".object_list_item").removeClass("object_list_item_select");
                 }
                 else{
+                    this.scenePath = editor.selected.scene;
                     this.updateContext(editor);
                     $(this.container).children(".object_list_header").children(".object_list_scene").val(editor.selected.scene);
                     $(".object_list_item").removeClass("object_list_item_select");
@@ -188,66 +204,6 @@ module.exports = class{
 
         }
     }
-
-    // changeDataCallback(editor){
-    //     if(editor.project == null || editor.project.scene.file === null || editor.project.scene.file === undefined){
-    //         return;
-    //     }
-
-    //     let scene = editor.project.scene.data;
-        
-    //     $(this.container).children(".context").html("");
-    //     for (let i = 0; i < scene.children.length; i++) {
-    //         if(scene.children[i].type == "LineSegments" || scene.children[i].type == "AmbientLight"){
-    //             continue;
-    //         }
-    //         this.showObj(scene.children[i], $( this.container).children(".context"));
-    //     }
-
-    //     let t = this;
-    //     $(".object_list_name").mousedown(function(e){
-    //         if($(this).children(".object_list_rename").length == 1){
-    //             return;
-    //         }
-
-    //         if(e.button == 2){
-    //             t.menuObject = t.findObj($(this).parent().attr("id"), editor.project.scene.data);
-    //             let o = $(t.container).offset();
-    //             $(t.container).children(".context_menu").css({ top: e.pageY - o.top, left: e.pageX - o.left });
-    //             $(t.container).children(".context_menu").hide().slideDown(100);
-
-    //             if(editor.selected.type == "object" && editor.selected.uuid == $(this).parent().attr("id")){
-    //                 $(t.container).children(".context_menu").children("ul").children(".context_menu_select").html("Unselect");
-    //             }
-    //             else{
-    //                 $(t.container).children(".context_menu").children("ul").children(".context_menu_select").html("Select");
-    //             }
-    //             t.menuJQObject = $(this);
-    //         }
-    //         else{
-    //             if($(this).parent().hasClass("object_list_item_select")){
-    //                 editor.selected = {
-    //                     type: "none"
-    //                 };
-    //             }
-    //             else{
-    //                 editor.selected = {
-    //                     type: "object",
-    //                     uuid: $(this).parent().attr("id")
-    //                 };
-    //             }
-    //         }
-    //     });
-
-        
-    // }
-
-    // selectCallback(editor){
-    //     $(".object_list_item").removeClass("object_list_item_select");
-    //     if(editor.selected.type == "object"){
-    //         $(".object_list_item#"+editor.selected.uuid).addClass("object_list_item_select");
-    //     }
-    // }
 
     // contextMenu(editor){
     //     let t = this;

@@ -25,15 +25,11 @@ module.exports = class{
         this.containerName = "context_scene";
         this.html = `scene.html`;
 
-        this.loadCallback = null;
-        //this.changeDataCallback = this.updateData;
-        //this.selectCallback = this.updateSelected;
-
         this.container = null;
         this.renderer = null;
         this.camera = null;
         this.scene = null;
-        this.senePath = null;
+        this.scenePath = null;
         this.raycaster = null;
         this.mouse = null;
         this.editor = null;
@@ -153,7 +149,7 @@ module.exports = class{
             if(v == "none"){
                 this.scene = new THREE.Scene();
                 this.scene.background = new THREE.Color(0x222222);
-                this.senePath = null;
+                this.scenePath = null;
             }
             else{
                 let p = path.join(this.editor.project.dirname, v);
@@ -167,7 +163,7 @@ module.exports = class{
                             require("../NativeLibraries/VScene").import(p, this.editor.project.files).then((e) => {
                                 f.data = e;
                                 this.scene = e.scene;
-                                this.senePath = v;
+                                this.scenePath = v;
                                 this.updateData(this.editor);
                             });
                         }
@@ -293,14 +289,14 @@ module.exports = class{
                         t.editor.selected = {
                             type: "object",
                             uuid: obj.OID,
-                            scene: t.senePath,
+                            scene: t.scenePath,
                         };
                     }
                     else{
                         t.editor.selected = {
                             type: "object",
                             uuid: obj.uuid,
-                            scene: t.senePath,
+                            scene: t.scenePath,
                         };
                     }
                 }
@@ -371,8 +367,8 @@ module.exports = class{
         t.scene.add(t.control);
     }
 
-    updateSelected(editor){
-        if(editor.selected.type == "object"){
+    UpdateSelect(editor){
+        if(editor.selected.type == "object" && editor.selected.scene == this.scenePath){
             this.scene.traverse((obj) => {
                 if(obj.uuid == editor.selected.uuid){
                     this.control.detach();
@@ -393,12 +389,12 @@ module.exports = class{
     }
 
     Load(editor, data){
-        this.senePath = data.activeScene;
+        this.scenePath = data.activeScene;
     }
 
     Save(editor){
         return {
-            activeScene: this.senePath,
+            activeScene: this.scenePath,
         }
     }
 
@@ -411,12 +407,11 @@ module.exports = class{
                 scene_list.append(`<option value="`+f.path+`">`+f.name+`</option>`);
             }
         }
-        if(this.senePath !== null){
-            scene_list.val(this.senePath);
+        if(this.scenePath !== null){
+            scene_list.val(this.scenePath);
             scene_list.change();
+            this.updateData(editor);
         }
-
-        
     }
 
 }

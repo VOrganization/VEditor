@@ -1,13 +1,43 @@
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
+const VScene = require("./VScene");
 
-function load(p, editor){
+async function loadFile(file, dirname){
+    let p = file.path;
+    let gp = path.join(dirname, file.path);
+    if(findFileType(path.extname(file.path)) == "scene"){
+        let f = {
+            type: findFileType(path.extname(p)),
+            name: path.basename(p),
+            path: p,
+            autoload: true,
+            inside: false,
+            hash: crypto.createHash("md5").update(fs.readFileSync(gp)).digest("hex"),
+            data: await VScene.import(gp, []),
+        }
+        return f;
+    }
+    return null;
+}
+
+async function load(p, editor){
     console.log("Load");
     console.log(p);
     let data = JSON.parse(fs.readFileSync(p));
     data["filename"] = String(p);
     data["dirname"] = path.dirname(String(p));
-    data.files = [];
+    let files = [];
+
+    for (let i = 0; i < data.files.length; i++) {
+        let d = await loadFile(data.files[i], data["dirname"]);
+        if(d){
+            files.push(d);
+        }
+    }
+    
+    data.files = files;
+
 
     return data;
 }

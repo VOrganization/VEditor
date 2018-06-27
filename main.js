@@ -97,8 +97,10 @@ const VProject = require("./NativeLibraries/VProject");
                             ]
                         }, function(file){
                             if(file !== undefined){
-                                editor.project = VProject.load(String(file), editor);
-                                VProject.afterLoad(editor.project, editor);
+                                VProject.load(String(file), editor).then((e) => {
+                                    editor.project = e;
+                                    VProject.afterLoad(editor.project, editor);
+                                });
                             }
                         });
                     }
