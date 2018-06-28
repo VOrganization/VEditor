@@ -8,12 +8,11 @@ module.exports = class{
         this.name = "object_settings";
         this.containerName = "context_settings";
         this.html = "object_settings.html";
-
-        this.selectCallback = this.update;
         
         this.container = null;
         
         this.selectObject = null;
+        this.selectScene = null;
 
         this.materialRenderer = null;
         this.materialScene = null;
@@ -36,7 +35,8 @@ module.exports = class{
         return null;
     }
 
-    update(editor){
+    UpdateSelect(editor){
+        console.log("Setting select");
         this.container.children(".context_settings_div").hide();
 
         if(editor.selected.type == "file"){
@@ -75,7 +75,21 @@ module.exports = class{
 
         }
         else if(editor.selected.type == "object"){
-            this.selectObject = this.findObject(editor.selected.uuid, editor.project.scene.data);
+            this.selectObject = null;
+            for (let i = 0; i < editor.project.files.length; i++) {
+                let f = editor.project.files[i];
+                if(f.path == editor.selected.scene && f.data !== null){
+                    this.selectScene = f.data;
+                    f.data.scene.traverse((obj) => {
+                        if(obj.uuid == editor.selected.uuid){
+                            this.selectObject = obj;
+                        }
+                    })
+                    break;
+                }
+            }
+
+
             if(this.selectObject === null){
                 return;
             }
@@ -671,8 +685,8 @@ module.exports = class{
     }
 
     getTextureValue(tex){
-        for (let i = 0; i < editor.project.textures.length; i++) {
-            if(editor.project.textures[i] == tex){
+        for (let i = 0; i < this.selectScene.textures.length; i++) {
+            if(this.selectScene.textures[i] == tex){
                 return i;
             }
         }
@@ -686,11 +700,11 @@ module.exports = class{
         let matC = $(this.container).children(".material_settings");
         matC.show();
 
-        matC.children(".material_header").children(".material_name").html("");
-        for (let i = 0; i < editor.project.materials.length; i++) {
-            let _mat = editor.project.materials[i].name;
+        matC.children(".material_header").children(".material_name").html(`<option value="default">Default</option>`);
+        for (let i = 0; i < this.selectScene.materials.length; i++) {
+            let _mat = this.selectScene.materials[i].name;
             matC.children(".material_header").children(".material_name").append(`<option value="` + i + `">` + _mat + `</option>`);   
-            if(editor.project.materials[i] == mat){
+            if(this.selectScene.materials[i] == mat){
                 matC.children(".material_header").children(".material_name").val(i);
             }
         }
@@ -703,8 +717,8 @@ module.exports = class{
         matC.children(".material_bump_map").html(`<option value="none">None</option>`);
         matC.children(".material_normal_map").html(`<option value="none">None</option>`);
         matC.children(".material_ao_map").html(`<option value="none">None</option>`);
-        for (let i = 0; i < editor.project.textures.length; i++) {
-            let tex = editor.project.textures[i];
+        for (let i = 0; i < this.selectScene.textures.length; i++) {
+            let tex = this.selectScene.textures[i];
             matC.children(".material_map_diffuse").append(`<option value="` + i + `">` + tex.name + `</option>`);
             matC.children(".material_map_roughness").append(`<option value="` + i + `">` + tex.name + `</option>`);
             matC.children(".material_map_metalness").append(`<option value="` + i + `">` + tex.name + `</option>`);

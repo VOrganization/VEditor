@@ -156,6 +156,7 @@ const VProject = require("./NativeLibraries/VProject");
                     label: "Save",
                     accelerator: 'Ctrl+S',
                     click(){
+                        console.log("Save data");
                         VProject.save(editor.project.filename, editor.project, editor);
                     }
                 },

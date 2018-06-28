@@ -43,7 +43,7 @@ module.exports = class{
     }
 
     destroy() {
-        
+        this.renderer.dispose();
     }
 
     initScene(){
@@ -390,11 +390,13 @@ module.exports = class{
 
     Load(editor, data){
         this.scenePath = data.activeScene;
+        console.log(data);
     }
 
     Save(editor){
         return {
             activeScene: this.scenePath,
+            controlMode: this.control.getMode(),
         }
     }
 

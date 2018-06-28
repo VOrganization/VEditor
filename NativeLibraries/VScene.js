@@ -177,6 +177,8 @@ async function loadMaterials(buf = new SmartBuffer(), data, db_files){
             buf.readUInt32LE();
             buf.readUInt32LE();
             buf.readUInt32LE();
+
+            data.materials.push(mat);
         }
     }
 }
